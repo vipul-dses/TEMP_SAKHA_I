@@ -30,8 +30,7 @@ int remDay;
 int remHour;
 int remMinute;
 String remMessage;
- String totalWeightstr;
- int indexDecimal;
+
 void Task1code(void *pvParameters)
 {
   for (;;)
@@ -167,16 +166,16 @@ void Task3code(void *pvParameters)
     BRH = remHour;
     BRMi = remMinute;
     BRMe = remMessage;
-      totalWeightstr=String(totalWeight);
-    indexDecimal=  totalWeightstr.indexOf('.');
-  //         Serial.print("index is : ");
-  // Serial.println(indexDecimal);
-  totalWeightstr=totalWeightstr.substring(0,indexDecimal+2);
-    ////Serial.print("before conversion: ");
-  //Serial.println(totalWeight);
-    //Serial.print("after conversion: ");
-  //Serial.println(totalWeightstr);
-    BTW = totalWeightstr;
+  //     totalWeightstr=String(totalWeight);
+  //   indexDecimal=  totalWeightstr.indexOf('.');
+  // //         Serial.print("index is : ");
+  // // Serial.println(indexDecimal);
+  // totalWeightstr=totalWeightstr.substring(0,indexDecimal+2);
+  //   ////Serial.print("before conversion: ");
+  // //Serial.println(totalWeight);
+  //   //Serial.print("after conversion: ");
+  // //Serial.println(totalWeightstr);
+    BTW = totalWeight;
     BCW = containerWeight;
     BRMo = regulatorMode;
     if (bGraph)

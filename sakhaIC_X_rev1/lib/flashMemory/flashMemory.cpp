@@ -16,7 +16,8 @@
 
 #define MAX_ENTRIES 100
 Preferences sPreferences;
-
+ String totalWeightstr;
+ int indexDecimal;
 const int buttonPin = 0;
 int fileCounter = 0;
 int fileNumber;
@@ -183,10 +184,19 @@ void writeToSPIFFS()
 
     gasTime = getUnix();
     gasWeigh =monitorCom();   // random(1, 30);
+          totalWeightstr=String(gasWeigh);
+    indexDecimal=  totalWeightstr.indexOf('.');
+  //         Serial.print("index is : ");
+  // Serial.println(indexDecimal);
+  totalWeightstr=totalWeightstr.substring(0,indexDecimal+2);
+    ////Serial.print("before conversion: ");
+  //Serial.println(totalWeight);
+    //Serial.print("after conversion: ");
+  //Serial.println(totalWeightstr);
     fileNumber=fileCounter;
     DynamicJsonDocument jsonDocSPIF(512);
     jsonDocSPIF["UT"] = gasTime;
-    jsonDocSPIF["SW"] = gasWeigh;
+    jsonDocSPIF["SW"] = totalWeightstr;
      jsonDocSPIF["FN"] = fileNumber;
      jsonDocSPIF["BP"] = incomingbatteryVoltage;
     String sData;

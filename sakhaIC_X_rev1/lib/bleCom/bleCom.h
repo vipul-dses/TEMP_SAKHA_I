@@ -32,7 +32,7 @@ extern String blRemMessage;
 extern bool bR;
 extern int blwarmupSensor;
 extern bool bWS;
-extern String BTW;
+extern float BTW;
 extern float BCW;
 extern int BRMo;
 extern int blRegulatorMode;
