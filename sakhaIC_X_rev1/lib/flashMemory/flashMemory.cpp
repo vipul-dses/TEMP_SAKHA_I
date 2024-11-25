@@ -28,7 +28,81 @@ String myFilePath;
 float gasWeigh = 0.0;
 uint32_t gasTime = 0;
 /***************************************list directories ***************************************/
+void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
+{
+    Serial.printf("Listing directory: %s\r\n", dirname);
 
+    File root = fs.open(dirname);
+    if (!root)
+    {
+        Serial.println("- failed to open directory");
+        return;
+    }
+    if (!root.isDirectory())
+    {
+        Serial.println("- not a directory");
+        return;
+    }
+
+    File file = root.openNextFile();
+    while (file)
+    {
+        if (file.isDirectory())
+        {
+            Serial.print("  DIR : ");
+            Serial.println(file.name());
+            if (levels)
+            {
+                listDir(fs, file.path(), levels - 1);
+            }
+        }
+        else
+        {
+            Serial.print("  FILE: ");
+            Serial.print(file.name());
+            Serial.print("\tSIZE: ");
+            Serial.println(file.size());
+            Serial.println("  CONTENTS:");
+            
+            while (file.available())
+            {
+                String data = "";
+                for (int i = 0; i < 50 && file.available(); ++i)
+                {
+                    data += (char)file.read(); // Accumulate up to 50 bytes
+                }
+                if (bGraph)
+                {
+                    pTxCharacteristic->setValue(data.c_str());
+                    pTxCharacteristic->notify();
+                    Serial.println("Bl Data sent: " + data);
+                }
+                if (wGraph)
+                {
+                    server.send(200, "text/json", data);
+                    Serial.println("Wi-Fi Data sent: " + data);
+                }
+            }
+        }
+        file = root.openNextFile();
+    }
+
+    // Send "$$" after all files are processed
+    String endMarker = "$$";
+    if (bGraph)
+    {
+        pTxCharacteristic->setValue(endMarker.c_str());
+        pTxCharacteristic->notify();
+        Serial.println("Bl Data sent: $$");
+    }
+    if (wGraph)
+    {
+        server.send(200, "text/json", endMarker);
+        Serial.println("Wi-Fi Data sent: $$");
+    }
+}
+
+/***** 
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
 {
 
@@ -92,6 +166,7 @@ if(bGraph)
   }
 }
 }
+*/
 /***************************************read file ***************************************/
 void readFile(fs::FS &fs, const char *path)
 {
