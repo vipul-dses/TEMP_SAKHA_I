@@ -13,13 +13,13 @@ Preferences mPreferences;
 // unit 50: 08:f9:e0:a3:a9:c0    //home unit
 //  unit 45:  08:f9:e0:af:67:44
 // unit 48    08:d1:f9:6c:73:44
+// unit 44  08:d1:f9:6c:6f:64
 //  uint8_t broadcastAddress[] = {0xEC, 0x64, 0xC9, 0x0A, 0x28, 0x9C};    //SAKHAIW address
 //uint8_t broadcastAddress[] = {0x08, 0xD1, 0xF9, 0x6C, 0x73, 0x44}; // SAKHAIC address
-uint8_t broadcastAddress[] = {0x08, 0xF9, 0xE0, 0xA3, 0xA9, 0xC0};
+uint8_t broadcastAddress[] = {0x08, 0xD1, 0xF9, 0x6C, 0x6F, 0x64};
 float myweight;
 int myChannel = 0;
 int failCounter = 0;
-int myID;
 
 
 int mutipleFailCounter = 0;

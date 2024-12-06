@@ -14,10 +14,9 @@
 #include "WebServer.h"
 #include "WiFiUdp.h"
 
-#define MAX_ENTRIES 100
+#define MAX_ENTRIES 720
 Preferences sPreferences;
- String totalWeightstr;
- int indexDecimal;
+
 const int buttonPin = 0;
 int fileCounter = 0;
 int fileNumber;
@@ -27,85 +26,11 @@ String myFilePath;
 #define FORMAT_SPIFFS_IF_FAILED true
 float gasWeigh = 0.0;
 uint32_t gasTime = 0;
+String totalWeightstr;
+int indexDecimal;
 /***************************************list directories ***************************************/
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
 {
-    Serial.printf("Listing directory: %s\r\n", dirname);
-
-    File root = fs.open(dirname);
-    if (!root)
-    {
-        Serial.println("- failed to open directory");
-        return;
-    }
-    if (!root.isDirectory())
-    {
-        Serial.println("- not a directory");
-        return;
-    }
-
-    File file = root.openNextFile();
-    while (file)
-    {
-        if (file.isDirectory())
-        {
-            Serial.print("  DIR : ");
-            Serial.println(file.name());
-            if (levels)
-            {
-                listDir(fs, file.path(), levels - 1);
-            }
-        }
-        else
-        {
-            Serial.print("  FILE: ");
-            Serial.print(file.name());
-            Serial.print("\tSIZE: ");
-            Serial.println(file.size());
-            Serial.println("  CONTENTS:");
-            
-            while (file.available())
-            {
-                String data = "";
-                for (int i = 0; i < 50 && file.available(); ++i)
-                {
-                    data += (char)file.read(); // Accumulate up to 50 bytes
-                }
-                if (bGraph)
-                {
-                    pTxCharacteristic->setValue(data.c_str());
-                    pTxCharacteristic->notify();
-                    Serial.println("Bl Data sent: " + data);
-                }
-                if (wGraph)
-                {
-                    server.send(200, "text/json", data);
-                    Serial.println("Wi-Fi Data sent: " + data);
-                }
-            }
-        }
-        file = root.openNextFile();
-    }
-
-    // Send "$$" after all files are processed
-    String endMarker = "$$";
-    if (bGraph)
-    {
-        pTxCharacteristic->setValue(endMarker.c_str());
-        pTxCharacteristic->notify();
-        Serial.println("Bl Data sent: $$");
-    }
-    if (wGraph)
-    {
-        server.send(200, "text/json", endMarker);
-        Serial.println("Wi-Fi Data sent: $$");
-    }
-}
-
-/***** 
-void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
-{
-
   Serial.printf("Listing directory: %s\r\n", dirname);
 
   File root = fs.open(dirname);
@@ -116,13 +41,19 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
   }
   if (!root.isDirectory())
   {
-    Serial.println(" - not a directory");
+    Serial.println("- not a directory");
     return;
   }
 
   File file = root.openNextFile();
   while (file)
   {
+    // Skip hello.txt
+    if (strcmp(file.name(), "hello.txt") == 0)
+    {
+      file = root.openNextFile();
+      continue;
+    }
     if (file.isDirectory())
     {
       Serial.print("  DIR : ");
@@ -139,34 +70,44 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
       Serial.print("\tSIZE: ");
       Serial.println(file.size());
       Serial.println("  CONTENTS:");
-    //   while (file.available())
-    //   {
-    //     Serial.write(file.read()); // Read and print each byte
-    // }
-      while (file.available()) {
-                String data = "";
-                for (int i = 0; i < 50 && file.available(); ++i) {
-                    data += (char)file.read();  // Accumulate up to 20 bytes
-                }
-if(bGraph)
-{
-     pTxCharacteristic->setValue(data.c_str());
-        pTxCharacteristic->notify();
-        Serial.println("Bl Data sent: " + data);
-       }
-       if(wGraph)
-       {
-        server.send(200, "text/json", data);
-        Serial.println("wifi Data sent: " + data);
 
-  }
- 
+      while (file.available())
+      {
+        String data = "";
+        for (int i = 0; i < 50 && file.available(); ++i)
+        {
+          data += (char)file.read(); // Accumulate up to 50 bytes
+        }
+        if (bGraph)
+        {
+          pTxCharacteristic->setValue(data.c_str());
+          pTxCharacteristic->notify();
+  //        Serial.println("Bl Data sent: " + data);
+        }
+        if (wGraph)
+        {
+          server.send(200, "text/json", data);
+          Serial.println("Wi-Fi Data sent: " + data);
+        }
       }
+    }
     file = root.openNextFile();
   }
+
+  // Send "$$" after all files are processed
+  String endMarker = "$$";
+  if (bGraph)
+  {
+    pTxCharacteristic->setValue(endMarker.c_str());
+    pTxCharacteristic->notify();
+    Serial.println("Bl Data sent: $$");
+  }
+  if (wGraph)
+  {
+    server.send(200, "text/json", endMarker);
+    Serial.println("Wi-Fi Data sent: $$");
+  }
 }
-}
-*/
 /***************************************read file ***************************************/
 void readFile(fs::FS &fs, const char *path)
 {
@@ -209,6 +150,30 @@ void writeFile(fs::FS &fs, const char *path, const char *message)
   }
   file.close();
 }
+
+/***************************************append file ***************************************/
+
+void appendFile(fs::FS &fs, const char *path, const char *message)
+{
+  Serial.printf("Appending to file: %s\r\n", path);
+
+  File file = fs.open(path, FILE_APPEND);
+  if (!file)
+  {
+    Serial.println("- failed to open file for appending");
+    return;
+  }
+  if (file.print(message))
+  {
+    Serial.println("- message appended");
+  }
+  else
+  {
+    Serial.println("- append failed");
+  }
+  file.close();
+}
+
 /***************************************delete file ***************************************/
 
 void deleteFile(fs::FS &fs, const char *path)
@@ -258,22 +223,18 @@ void writeToSPIFFS()
     const char *filePath = myFilePath.c_str();
 
     gasTime = getUnix();
-    gasWeigh =monitorCom();   // random(1, 30);
-          totalWeightstr=String(gasWeigh);
-    indexDecimal=  totalWeightstr.indexOf('.');
-  //         Serial.print("index is : ");
-  // Serial.println(indexDecimal);
-  totalWeightstr=totalWeightstr.substring(0,indexDecimal+2);
-    ////Serial.print("before conversion: ");
-  //Serial.println(totalWeight);
-    //Serial.print("after conversion: ");
-  //Serial.println(totalWeightstr);
-    fileNumber=fileCounter;
+    gasWeigh = monitorCom();
+    totalWeightstr = String(gasWeigh);
+    indexDecimal = totalWeightstr.indexOf('.');
+    //         Serial.print("index is : ");
+    // Serial.println(indexDecimal);
+    totalWeightstr = totalWeightstr.substring(0, indexDecimal + 2);
+    fileNumber = fileCounter;
     DynamicJsonDocument jsonDocSPIF(512);
     jsonDocSPIF["UT"] = gasTime;
     jsonDocSPIF["SW"] = totalWeightstr;
-     jsonDocSPIF["FN"] = fileNumber;
-     jsonDocSPIF["BP"] = incomingbatteryVoltage;
+    jsonDocSPIF["FN"] = fileNumber;
+    jsonDocSPIF["BP"] = incomingbatteryVoltage;
     String sData;
     serializeJson(jsonDocSPIF, sData);
 
@@ -284,7 +245,47 @@ void writeToSPIFFS()
     // readFile(SPIFFS, filePath);
 
     // deleteFile(SPIFFS, "/0.txt");
+  }
+}
 
+void CRToSPIFFS()
+{
+//  deleteFile(SPIFFS, "/hello.txt");
+  Serial.println(testString);
+  testString += ',';
+  const char *testStr = testString.c_str();
+  appendFile(SPIFFS, "/hello.txt", testStr);
+  //  readFile(SPIFFS, "/hello.txt");
+
+  crDataflag = false;
+}
+
+void SPIFFStoCR()
+{
+  Serial.println("123456");
+  // File file = SPIFFS.open("/hello.txt");
+  File file = SPIFFS.open("/hello.txt", "r");
+  if (!file)
+  {
+    Serial.println("- failed to open file for reading");
+    return;
   }
 
+  Serial.println("- read from file:");
+  String data1;
+  while (file.available())
+  {
+ //   Serial.write(file.read());
+    data1 += (char)file.read();
+  }
+file.close();
+String data2 = "{\"Re\": 1, \"data\": [";
+  Serial.println(data1);
+  String data3="]}";
+  String data4 =data2+data1+data3;
+  pTxCharacteristic->setValue(data4.c_str());
+  pTxCharacteristic->notify();
+ // Serial.println("CR Data sent: " + data4);
+    
+  blcrFlag = false;
 }

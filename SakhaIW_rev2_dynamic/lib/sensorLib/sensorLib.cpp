@@ -35,7 +35,7 @@ float readSensor()
   WEIGHT_PRINTLN(String(sensorFlag));
   WEIGHT_PRINT("Actual readSensor weight: ");
   WEIGHT_PRINTLN(String(weight) + " KG");
-
+weight=18; // just for test
   if (weight >= 15.0)
   {
     float adjustment = (regulatorMode == 1) ? 0.5 : 0.0;
@@ -44,6 +44,11 @@ float readSensor()
     {
       gasWeight = weight - (incomingCW + adjustment);
       gP = (gasWeight / dGW) * 100;
+      
+      if(gP<1.0)
+{
+  gasPercentage=gP;
+}
     }
     else if (incomingCW >= 18.0 && incomingCW < 21.0)
     {
@@ -84,14 +89,16 @@ float getBatteryPercentage()
 {
 
   // Constants for battery voltage levels
-  const float fullChargeVoltage = 3.45;  // Full charge voltage
+  const float fullChargeVoltage = 3.63;  // Full charge voltage
   const float dischargeVoltage = 2.65;   // Discharge voltage
   const float maxADCValue = 4095.0;      // Max value of the ADC (12-bit resolution)
   const float adcReferenceVoltage = 3.3; // ESP32 ADC reference voltage (3.3V)
 
   // Voltage divider resistor values (adjust if you're using a divider)
-  const float R1 = 990.0;  // Resistor R1 in the voltage divider (in ohms)
-  const float R2 = 5000.0; // Resistor R2 in the voltage divider (in ohms)
+  //const float R1 = 990.0;  // Resistor R1 in the voltage divider (in ohms)
+  //const float R2 = 5000.0; // Resistor R2 in the voltage divider (in ohms)
+ const float R1 = 10000.0;  // for new PCB rev4
+  const float R2 = 100000.0; 
 
   // Calculate the divider ratio
   const float voltageDividerRatio = (R1 + R2) / R2;
@@ -100,7 +107,7 @@ float getBatteryPercentage()
   BATTERY_LOG("ADC value: ");
   BATTERY_LOGLN(adcValue);
   float batteryVoltage = (adcValue / maxADCValue) * adcReferenceVoltage * voltageDividerRatio;
-  batteryVoltage = batteryVoltage + 0.25;
+  batteryVoltage = batteryVoltage;
   BATTERY_LOG("battery Voltage: ");
   BATTERY_LOGLN(batteryVoltage);
   if (batteryVoltage < 2.70)

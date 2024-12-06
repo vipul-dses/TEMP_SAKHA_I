@@ -17,8 +17,8 @@ int BRD;
 int BRH;
 int BRMi;
 String BRMe;
+// float BTW;
 float BTW;
-//String BTW;
 float BCW;
 int BRMo;
 String wifiName;
@@ -45,6 +45,9 @@ bool bCW = false;
 
 int blGetGraph;
 bool bGraph;
+bool blcrFlag;
+String testString;
+bool crDataflag;
 
 BLEServer *pServer = NULL;
 BLECharacteristic *pTxCharacteristic;
@@ -103,7 +106,6 @@ class SakhaCCharacteristicsCallback : public BLECharacteristicCallbacks
                 if (blDisBuzzer == 0)
                 {
                     buzzerBeepAck();
-                   
                 }
 
                 //  buzzerBeepAck();
@@ -171,6 +173,16 @@ class SakhaCCharacteristicsCallback : public BLECharacteristicCallbacks
                 bGraph = true;
                 Serial.println("Received data for blContainerWeight: " + String(blGetGraph));
                 break;
+            case 9:   
+        serializeJson(jsonDocBR, testString);
+      //  Serial.println(testString);
+        crDataflag=true;
+               // SERIAL_PRINTLN("Received data for CR: " + blCRCT + " " + blCROP + " " + String(blCRCW) + " " + String(blCRGW)+ " " +blCRDD+ " " + String(blCRAD));
+                break;
+            case 10:
+                blcrFlag = true;
+                Serial.println("Received data for blContainerWeight: " + String(blcrFlag));
+                break;
             }
         }
         characteristicValue.clear();
@@ -215,7 +227,7 @@ void monitorBle()
         serializeJson(jsonDocBT, bData);
         pTxCharacteristic->setValue(bData.c_str());
         pTxCharacteristic->notify();
-        SERIAL_PRINTLN("Bl Data sent: " + bData);
+     //   SERIAL_PRINTLN("Bl Data sent: " + bData);
         delay(10);
     }
     pServer->startAdvertising();

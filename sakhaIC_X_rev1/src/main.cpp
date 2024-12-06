@@ -30,7 +30,10 @@ int remDay;
 int remHour;
 int remMinute;
 String remMessage;
-
+unsigned long previousMillis = 0;
+const long period = 3900000;
+// String totalWeightstr;
+// int indexDecimal;
 void Task1code(void *pvParameters)
 {
   for (;;)
@@ -66,7 +69,10 @@ void Task2code(void *pvParameters)
     CW = containerWeight;
     GP = gasPercentage;
     GW = gasWeight;
-    monitorDisplay();
+ 
+      monitorDisplay();
+  
+    // monitorDisplay();
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
@@ -81,22 +87,32 @@ void Task3code(void *pvParameters)
       mPreferences.putString("wP", wifiPass);
       mPreferences.end();
       BLE_PRINTLN("Saved data in namePass: " + wifiName + " " + wifiPass);
-      bleAck("Connecting To " + wifiName, 0);
+      ("Connecting To " + wifiName, 0);
       ESP.restart();
     }
     else if (bT)
     {
+
       cTime = blTime;
       updateTime();
-      bleAck("Time Updated", 0);
+      stopScroll = false;
+      monitorDisplay();
+      screenAck("Time Updated", 0);
       bT = false;
     }
     else if (bDB)
     {
       disBuzzer = blDisBuzzer;
+      stopScroll = false;
+      monitorDisplay();
+
       if (disBuzzer)
       {
-        bleAck("Buzzer turned Off", 0);
+        screenAck("Buzzer turned OFF", 0);
+      }
+      else 
+      {
+         screenAck("Buzzer turned ON", 0);
       }
 
       mPreferences.begin("mD", false);
@@ -132,15 +148,15 @@ void Task3code(void *pvParameters)
     else if (bRM)
     {
       regulatorMode = blRegulatorMode;
-      stopScroll = false;
-      if (regulatorMode)
-      {
-        bleAck("Regulator mode is ON", 0);
-      }
-      else
-      {
-        bleAck("Regulator mode is OFF", 0);
-      }
+     stopScroll = false;
+     monitorDisplay();
+     if(regulatorMode)
+     {
+      screenAck("Regulator Mode ON:", 0);
+     }
+     else{
+     screenAck("Regulator Mode OFF:", 0);
+     }
       mPreferences.begin("mD", false);
       mPreferences.putInt("rM", regulatorMode);
       mPreferences.end();
@@ -151,12 +167,22 @@ void Task3code(void *pvParameters)
     {
       containerWeight = blContainerWeight;
       stopScroll = false;
-      bleAck("Received CW:", blContainerWeight);
+      monitorDisplay();
+      screenAck("Received CW:", blContainerWeight);
       mPreferences.begin("mD", false);
       mPreferences.putFloat("cW", containerWeight);
       mPreferences.end();
       BLE_PRINTLN("Saved data in containerWeight: " + String(containerWeight));
       bCW = false;
+    }
+    else if (crDataflag)
+    {
+      
+       CRToSPIFFS();
+    }
+    else if (blcrFlag)
+    {
+      SPIFFStoCR();
     }
     BGC = gasConc;
     BWN = wifiName;
@@ -166,15 +192,15 @@ void Task3code(void *pvParameters)
     BRH = remHour;
     BRMi = remMinute;
     BRMe = remMessage;
-  //     totalWeightstr=String(totalWeight);
-  //   indexDecimal=  totalWeightstr.indexOf('.');
-  // //         Serial.print("index is : ");
-  // // Serial.println(indexDecimal);
-  // totalWeightstr=totalWeightstr.substring(0,indexDecimal+2);
-  //   ////Serial.print("before conversion: ");
-  // //Serial.println(totalWeight);
-  //   //Serial.print("after conversion: ");
-  // //Serial.println(totalWeightstr);
+    //    totalWeightstr=String(totalWeight);
+    // indexDecimal=  totalWeightstr.indexOf('.');
+    //         Serial.print("index is : ");
+    // Serial.println(indexDecimal);
+    // totalWeightstr=totalWeightstr.substring(0,indexDecimal+2);
+    ////Serial.print("before conversion: ");
+    // Serial.println(totalWeight);
+    // Serial.print("after conversion: ");
+    // Serial.println(totalWeightstr);
     BTW = totalWeight;
     BCW = containerWeight;
     BRMo = regulatorMode;
@@ -202,52 +228,62 @@ void Task4code(void *pvParameters)
     {
       cTime = wifiTime;
       updateTime();
+      stopScroll = false;
+      monitorDisplay();
+      screenAck("Time Updated", 0);
       wT = false;
     }
     else if (wDB)
     {
       disBuzzer = wifiDisBuzzer;
+      stopScroll = false;
+      monitorDisplay();
+      if (disBuzzer)
+      {
+        screenAck("Buzzer turned OFF", 0);
+      }
+      if (!disBuzzer)
+      {
+        screenAck("Buzzer turned ON", 0);
+      }
       mPreferences.begin("mD", false);
       mPreferences.putInt("dB", disBuzzer);
       mPreferences.end();
       SERIAL_PRINTLN("Saved data in disBuzzer: " + String(disBuzzer));
       wDB = false;
     }
-    else if (wER)
+    else if (wRM)
     {
-      enReminder = wifiEnReminder;
+      regulatorMode = wRegulatorMode;
+      stopScroll = false;
+      monitorDisplay();
+      if (regulatorMode)
+      {
+        screenAck("Regulator mode is ON", 0);
+      }
+      else
+      {
+        screenAck("Regulator mode is OFF", 0);
+      }
       mPreferences.begin("mD", false);
-      mPreferences.putInt("eR", enReminder);
+      mPreferences.putInt("rM", regulatorMode);
       mPreferences.end();
-      SERIAL_PRINTLN("Saved data in enReminder: " + String(enReminder));
-      wER = false;
+      BLE_PRINTLN("Saved data in regulatorMode: " + String(regulatorMode));
+      wRM = false;
     }
-    else if (wR)
+    else if (wCW)
     {
-      remDay = wifiRemDay;
-      remHour = wifiRemHour;
-      remMinute = wifiRemMinute;
-      remMessage = wifiRemMessage;
+      containerWeight = wContainerWeight;
+      stopScroll = false;
+      monitorDisplay();
+      screenAck("Received CW:", wContainerWeight);
       mPreferences.begin("mD", false);
-      mPreferences.putInt("rD", remDay);
-      mPreferences.putInt("rH", remHour);
-      mPreferences.putInt("rMi", remMinute);
-      mPreferences.putString("rMe", remMessage);
+      mPreferences.putFloat("cW", containerWeight);
       mPreferences.end();
-      SERIAL_PRINTLN("Saved data in dHMM: " + String(remDay) + " " + String(remHour) + " " + String(remMinute) + " " + remMessage);
-      wR = false;
+      BLE_PRINTLN("Saved data in containerWeight: " + String(containerWeight));
+      wCW = false;
     }
-    WGC = gasConc;
-    WWN = wifiName;
-    WDB = disBuzzer;
-    WER = enReminder;
-    WRD = remDay;
-    WRMo = regulatorMode;
-    WTW = totalWeight;
-    WCW = containerWeight;
-    WRH = remHour;
-    WRMi = remMinute;
-    WRMe = remMessage;
+
     if (wGraph)
     {
       delay(100);
@@ -259,10 +295,13 @@ void Task4code(void *pvParameters)
       monitorWiFi();
     }
 
+    WWN = wifiName;
+    WDB = disBuzzer;
+    WRMo = regulatorMode;
+    WCW = containerWeight;
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }
 }
-
 void Task5code(void *pvParameters)
 {
   for (;;)
@@ -270,7 +309,9 @@ void Task5code(void *pvParameters)
     if (bWS)
     {
       wWS = true;
-      bleAck("Sensor Warming up", 0);
+      stopScroll = false;
+      monitorDisplay();
+      screenAck("Sensor Warming up", 0);
       iS = false;
       for (int i = 0; i < 300; i++)
       {
@@ -347,13 +388,26 @@ void Task6code(void *pvParameters)
       iE = false;
       whiteColor();
     }
+
     else if (eD)
     {
-      iE = true;
-      vTaskDelay(3300000 / portTICK_PERIOD_MS);
-      eD = false;
+      if (eDCounter > 0)
+      {
+        previousMillis = millis(); // Reset timer when eD becomes true
+        eDCounter = 0;             // Mark timer as started
+      }
+
+      unsigned long currentMillis = millis(); // store the current time
+
+      if (currentMillis - previousMillis >= period)
+      {
+        eD = false;
+        iE = true;
+        previousMillis = currentMillis;
+        //       SERIAL_PRINTLN("timer triggered: ");
+      }
     }
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
   }
 }
 
@@ -417,7 +471,6 @@ void initializeData()
   containerWeight = mPreferences.getFloat("cW", containerWeight);
   SERIAL_PRINTLN("Saved data in containerWeight: " + String(containerWeight));
   mPreferences.end();
-
 }
 
 void setup()
@@ -432,6 +485,7 @@ void setup()
   initializeDisplay();
   initializeBle();
   initSPIFFS();
+  whiteColor();
   delay(10);
   xTaskCreatePinnedToCore(Task6code, "Task6", 2000, NULL, 1, &Task6, 0);
   delay(10);
@@ -441,7 +495,7 @@ void setup()
   delay(10);
   // Task detects the level of gas concentration,
   // determines whether the reminder is set, and sounds a buzzer if the set time and the actual time match.
-  xTaskCreatePinnedToCore(Task1code, "Task1", 4000, NULL, 1, &Task1, 1);
+  xTaskCreatePinnedToCore(Task1code, "Task1", 2000, NULL, 1, &Task1, 1); // stack size changed to 1000 from 4000 on 02-12-24
   delay(10);
   // Task2 display various content on the display
   xTaskCreatePinnedToCore(Task2code, "Task2", 4000, NULL, 1, &Task2, 1);

@@ -11,7 +11,8 @@
 #include <ledLib.h>
 #include "SH1106Wire.h"
 #define uS_TO_S_FACTOR 1000000
-#define TIME_TO_SLEEP (3.6 * uS_TO_S_FACTOR)       //3.6e9 // 300 // 3.6e9
+#define TIME_TO_SLEEP 300000000//3600000000
+//3600000000  //(3600 * uS_TO_S_FACTOR)       //3.6e9 // 300 // 3.6e9
 unsigned long previousMillis = 0;
 const long period = 60000;
 // #define uS_TO_S_FACTOR 1000000
@@ -34,8 +35,6 @@ void Task1code(void *pvParameters)
   for (;;)
   {
     readSensor();
-    // Serial.print("MAIN TASK WEIGHT : ");
-    // Serial.println(TW);
     monitorDisplay();
     unsigned long currentMillis = millis(); // store the current time
     if (currentMillis - previousMillis >= period)
@@ -43,7 +42,7 @@ void Task1code(void *pvParameters)
       sleepSensor();
     //  delay(2000);
       turnOffScreen();
-      esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+      esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP);
       Serial.println("Going to sleep now");
       esp_deep_sleep_start();
     }
@@ -58,10 +57,7 @@ void Task2code(void *pvParameters)
 
   for (;;)
   {
-  //          Serial.print("espNowFlag:");
-  // Serial.println(espNowFlag);
-  //        Serial.print("sensorFlag:");
-  // Serial.println(sensorFlag);
+
     if (espNowFlag && sensorFlag)
     {
 
@@ -74,8 +70,6 @@ void Task2code(void *pvParameters)
 
 void setup()
 {
-  // pinMode(batGPIO, OUTPUT);
-  // digitalWrite(batGPIO, HIGH);
   Serial.begin(115200);
   pinInit();
   initializeLed();

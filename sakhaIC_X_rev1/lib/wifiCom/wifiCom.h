@@ -33,6 +33,10 @@ extern float containerWeight;
 extern float totalWeight;
 extern int regulatorMode;
 extern bool wGraph;
+extern bool wRM;
+extern int wRegulatorMode;
+extern float wContainerWeight;
+extern bool wCW;
 // Monitor Wi-Fi communication
 void monitorWiFi();
 

@@ -19,7 +19,7 @@ extern float GW;
 extern bool stopScroll;
 // This function sets up the necessary configurations and parameters for the display.
 void initializeDisplay();
-void bleAck(String, float);
+void screenAck(String, float);
 // This function updates the display content and handles display-related operations.
 void monitorDisplay();
 
