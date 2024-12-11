@@ -43,7 +43,7 @@ float monitorCom()
 {
   GAS_PRINTLN("Total Weight: " + String(totalWeight) + " KG");
   GAS_PRINTLN("Container Weight: " + String(containerWeight) + " KG");
-totalWeight=22.2;
+
   if (totalWeight >= 15.0)
   {
     float adjustment = (regulatorMode == 1) ? 0.5 : 0.0;
@@ -70,10 +70,6 @@ totalWeight=22.2;
     gasPercentage = -1.0;
   }
   gasPercentage = round(gP);
-if(gasPercentage>=100)
-{
-  gasPercentage=100;
-}
 
   GAS_PRINTLN("Gas Weight: " + String(gasWeight) + " KG");
   GAS_PRINTLN("Gas Percentage: " + String(gasPercentage) + " %");

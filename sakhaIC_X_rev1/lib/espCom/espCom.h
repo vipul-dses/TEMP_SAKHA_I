@@ -3,7 +3,6 @@
 
 extern float totalWeight;
 extern bool eD;
-extern int eDCounter;
 extern int incomingbatteryVoltage;
 // Initialize ESP-NOW communication
 void initializeCom();

@@ -10,9 +10,7 @@ SH1106Wire display(0x3c, SDA, SCL);
 typedef void (*Demo)(void);
 int demoMode = 0;
 int counter = 1;
-unsigned long notificationStartTime = 0;
-bool isNotificationActive = false;
-bool stopScroll = true;
+bool stopScroll=true;
 bool iS = false;
 bool iW = false;
 int iR;
@@ -100,6 +98,7 @@ void screenOne()
         display.drawString(64, 42, "High Gas Leak");
         display.display();
     }
+
 }
 
 void screenTwo()
@@ -135,8 +134,8 @@ void screenTwo()
         display.setTextAlignment(TEXT_ALIGN_LEFT);
         display.drawString(0, 0, "TW: " + String(TW));
         display.setTextAlignment(TEXT_ALIGN_RIGHT);
-        // display.drawString(128, 0, "CW: " + String(CW));
-        display.drawString(128, 0, "BP: " + String(incomingbatteryVoltage) + " %");
+       // display.drawString(128, 0, "CW: " + String(CW));
+       display.drawString(128, 0, "BP: " + String(incomingbatteryVoltage)+ " %");
         display.setTextAlignment(TEXT_ALIGN_CENTER);
         display.setFont(Arimo_Regular_24);
         display.drawString(64, 12, "- %");
@@ -144,39 +143,27 @@ void screenTwo()
         display.drawString(64, 38, "GW: - KG");
         display.display();
     }
-    else if (iE && GW >= 0.0 && GW <= 0.01)
+    else if (iE && GW >= 0.0 && GW <= 2.0)
     {
         display.clear();
         display.setTextAlignment(TEXT_ALIGN_CENTER);
         display.setFont(Arimo_Regular_12);
         display.drawString(64, 0, "Notification");
         display.setFont(Arimo_Regular_24);
-        display.drawString(64, 12, String(1) + " %");
+        display.drawString(64, 12, String(GP) + " %");
         display.setFont(Arimo_Regular_18);
         display.drawString(64, 38, "Gas Runout");
         display.display();
     }
-    else if (iE && GW >= 0.0 && GW <= 0.15)
-    {
-        display.clear();
-        display.setTextAlignment(TEXT_ALIGN_CENTER);
-        display.setFont(Arimo_Regular_12);
-        display.drawString(64, 0, "Notification");
-        display.setFont(Arimo_Regular_24);
-        display.drawString(64, 12, String(1) + " %");
-        display.setFont(Arimo_Regular_18);
-        display.drawString(64, 38, "Gas Runout");
-        display.display();
-    }
-    else if (iE && GW > 0.15)
+    else if (iE && GW > 2.0)
     {
         display.clear();
         display.setFont(Arimo_Regular_12);
         display.setTextAlignment(TEXT_ALIGN_LEFT);
         display.drawString(0, 0, "TW: " + String(TW));
         display.setTextAlignment(TEXT_ALIGN_RIGHT);
-        // display.drawString(128, 0, "CW: " + String(CW));
-        display.drawString(128, 0, "BP: " + String(incomingbatteryVoltage) + " %");
+       // display.drawString(128, 0, "CW: " + String(CW));
+         display.drawString(128, 0, "BP: " + String(incomingbatteryVoltage)+ " %");
         display.setTextAlignment(TEXT_ALIGN_CENTER);
         display.setFont(Arimo_Regular_24);
         display.drawString(64, 12, String(GP) + " %");
@@ -257,51 +244,45 @@ long timeSinceLastModeSwitch = 0;
 
 void monitorDisplay()
 {
-     display.clear();
-        delay(5);
-    if (stopScroll)
+     if(stopScroll)
+     {
+    demos[demoMode]();
+    if (millis() - timeSinceLastModeSwitch > DEMO_DURATION)
     {
-        demos[demoMode]();
-        if (millis() - timeSinceLastModeSwitch > DEMO_DURATION)
-        {
-            demoMode = (demoMode + 1) % demoLength;
-            timeSinceLastModeSwitch = millis();
-        }
-        counter++;
-        delay(10);
+        demoMode = (demoMode + 1) % demoLength;
+        timeSinceLastModeSwitch = millis();
     }
-     if (isNotificationActive && millis() - notificationStartTime >= 5000)
-    {
-        isNotificationActive = false;
-        stopScroll = true;
-        monitorDisplay();
-        // You can also clear the screen or transition to the previous state here
-    }
+    counter++;
+    delay(10);
+     }
 }
 
-void screenAck(String msg, float blecontainer)
+void bleAck(String msg, float blecontainer)
 {
-
-    if (!isNotificationActive)
-    {
-        display.clear();
-        delay(50);
+             
+   if(blecontainer>0){
+             display.clear();
         display.setTextAlignment(TEXT_ALIGN_CENTER);
         display.setFont(Arimo_Regular_12);
         display.drawString(64, 0, "Notification");
         display.setFont(Arimo_Regular_12);
         display.drawString(64, 18, msg);
-        if (blecontainer > 0)
-        {
-            display.setFont(Arimo_Regular_24);
-            display.drawString(64, 30, String(blecontainer) + " KG");
-        }
-        display.display();
-        notificationStartTime = millis();
-        isNotificationActive = true;
-
-     //   stopScroll = true;
-    }
-
-   
+        display.setFont(Arimo_Regular_24);
+        display.drawString(64, 30, String(blecontainer)+ " KG");
+        display.display();   
+         delay(5000);
+        stopScroll=true;
+   }
+   else
+   {
+         display.clear();
+        display.setTextAlignment(TEXT_ALIGN_CENTER);
+        display.setFont(Arimo_Regular_12);
+        display.drawString(64, 0, "Notification");
+        display.setFont(Arimo_Regular_12);
+        display.drawString(64, 18, msg);
+         display.display();   
+         delay(5000);
+        stopScroll=true;
+   }
 }

@@ -19,7 +19,7 @@ void setColor(int red, int green, int blue)
 void greenColor()
 {
     setColor(0, 255, 0);
-   // SERIAL_PRINTLN("Green color activated");
+    SERIAL_PRINTLN("Green color activated");
 }
 
 void orangeColor()

@@ -8,7 +8,8 @@
 #include "ArduinoJson.h"
 #include "buzzerLib.h"
 #include "espCom.h"
-
+#include "SPIFFS.h"
+#include "FS.h"
 
 const char *ssid;
 const char *password;
@@ -39,11 +40,11 @@ bool wR = false;
 int wifilwarmupSensor;
 bool wWS = false;
 bool wGraph = false;
-bool wcrFlag =false;
-bool wRM=false;
+bool wcrFlag = false;
+bool wRM = false;
 int wRegulatorMode;
 float wContainerWeight;
-bool wCW =false;
+bool wCW = false;
 WebServer server(80);
 #define UDP_PORT 50023
 WiFiUDP udp;
@@ -61,7 +62,7 @@ void handleRoot()
 
 void handleData()
 {
- // delay(100);
+  // delay(100);
   DynamicJsonDocument jsonDocWT(1024);
   jsonDocWT["GC"] = WGC;
   jsonDocWT["WN"] = WWN;
@@ -81,12 +82,12 @@ void handleData()
   server.send(200, "text/json", wData);
   SERIAL_PRINTLN("WiFi Data Sent: " + wData);
   server.stop(); // Stops the server
-        return;
+  return;
 }
 
 void handleTime()
 {
-   // delay(100);
+  // delay(100);
 
   DynamicJsonDocument jsonDocWT(1024);
   String wData;
@@ -110,9 +111,8 @@ void handleTime()
     //     return;
     // }
     server.send(200, "text/json", wData);
-     server.stop(); // Stops the server
-        return;
- 
+    server.stop(); // Stops the server
+    return;
   }
   jsonDocWT["Re"] = 0;
   serializeJson(jsonDocWT, wData);
@@ -121,7 +121,7 @@ void handleTime()
 
 void handleBuzzer()
 {
- //   delay(100);
+  //   delay(100);
 
   DynamicJsonDocument jsonDocWT(1024);
   String wData;
@@ -140,8 +140,8 @@ void handleBuzzer()
     jsonDocWT["Re"] = 1;
     serializeJson(jsonDocWT, wData);
     server.send(200, "text/json", wData);
-     server.stop(); // Stops the server
-        return;
+    server.stop(); // Stops the server
+    return;
   }
   jsonDocWT["Re"] = 0;
   serializeJson(jsonDocWT, wData);
@@ -150,7 +150,7 @@ void handleBuzzer()
 
 void handleRegulator()
 {
- //   delay(100);
+  //   delay(100);
 
   // JsonDocument jsonDocToBeSent;
   DynamicJsonDocument jsonDocWT(1024);
@@ -163,8 +163,8 @@ void handleRegulator()
     DynamicJsonDocument jsonDocWR(1024);
     deserializeJson(jsonDocWR, value);
     wRegulatorMode = jsonDocWR["RMo"]; // regulator_mode
-        wRM=true;
-    jsonDocWR["Re"] = 1;              // response: success
+    wRM = true;
+    jsonDocWR["Re"] = 1; // response: success
     if (wifiDisBuzzer == 0)
     {
       buzzerBeepAck();
@@ -172,8 +172,8 @@ void handleRegulator()
     serializeJson(jsonDocWR, dataToBeSent);
     Serial.println("Sent: " + dataToBeSent);
     server.send(200, "text/json", dataToBeSent);
-     server.stop(); // Stops the server
-        return;
+    server.stop(); // Stops the server
+    return;
   }
   jsonDocWT["Re"] = 0; // response: fail
   serializeJson(jsonDocWT, dataToBeSent);
@@ -183,7 +183,7 @@ void handleRegulator()
 
 void handleContainer()
 {
-   // delay(100);
+  // delay(100);
 
   // JsonDocument jsonDocWR;
   DynamicJsonDocument jsonDocWT(1024);
@@ -196,17 +196,17 @@ void handleContainer()
     // JsonDocument jsonDoc;
     DynamicJsonDocument jsonDocWR(1024);
 
- //   deserializeJson(jsonDocWR, value);
+    //   deserializeJson(jsonDocWR, value);
 
     deserializeJson(jsonDocWR, value);
     wContainerWeight = jsonDocWR["CW"]; // container_weight
-    wCW=true;
-    jsonDocWR["Re"] = 1;   
-        jsonDocWR["Re"] = 1;              // response: success
+    wCW = true;
+    jsonDocWR["Re"] = 1;
+    jsonDocWR["Re"] = 1; // response: success
     if (wifiDisBuzzer == 0)
     {
       buzzerBeepAck();
-    }            // response: success
+    } // response: success
     serializeJson(jsonDocWR, dataToBeSent);
     Serial.println("Sent: " + dataToBeSent);
     server.send(200, "text/json", dataToBeSent);
@@ -237,9 +237,9 @@ void handleScreen()
       buzzerBeepAck();
     }
     wER = true;
-         jsonDocWT["Re"] = 1;
+    jsonDocWT["Re"] = 1;
     serializeJson(jsonDocWT, wData);
-        Serial.println("Sent: " + wData);
+    Serial.println("Sent: " + wData);
 
     server.send(200, "text/json", wData);
     return;
@@ -286,25 +286,82 @@ void handlegraph()
   if (server.hasArg("Va"))
   {
     String value = server.arg("Va");
-   DynamicJsonDocument jsonDocWR(1024);
+    DynamicJsonDocument jsonDocWR(1024);
     deserializeJson(jsonDocWR, value);
-    wGraph = true;//jsonDocWR["SF"];
+    wGraph = true; // jsonDocWR["SF"];
     SERIAL_PRINTLN("Permission for graph: " + String(wGraph));
-        if (wifiDisBuzzer == 0)
+    if (wifiDisBuzzer == 0)
     {
       buzzerBeepAck();
     }
-        jsonDocWT["Re"] = 1;
+    jsonDocWT["Re"] = 1;
     serializeJson(jsonDocWT, wData);
     server.send(200, "text/json", wData);
-     server.stop(); // Stops the server
-        return;
-    
+    server.stop(); // Stops the server
+    return;
   }
   jsonDocWT["Re"] = 0;
   serializeJson(jsonDocWT, wData);
   server.send(400, "text/json", wData);
+}
+
+void WSPIFFStoCR()
+{
+  Serial.println("123456");
+  // File file = SPIFFS.open("/hello.txt");
+  File file = SPIFFS.open("/hello.txt", "r");
+  if (!file)
+  {
+    Serial.println("- failed to open file for reading");
+    return;
   }
+
+  Serial.println("- read from file:");
+  String data1;
+  while (file.available())
+  {
+    //   Serial.write(file.read());
+    data1 += (char)file.read();
+  }
+  file.close();
+  String data2 = "{\"Re\": 1, \"data\": [";
+  data1.remove(data1.length() - 1);
+  Serial.println(data1);
+  String data3 = "]}";
+  String data4 = data2 + data1 + data3;
+  server.send(200, "text/json", data4);
+  Serial.println("Wi-Fi Data sent: " + data4);
+}
+
+void wAppendFile(fs::FS &fs, const char *path, const char *message)
+{
+  Serial.printf("Appending to file: %s\r\n", path);
+
+  File file = fs.open(path, FILE_APPEND);
+  if (!file)
+  {
+    Serial.println("- failed to open file for appending");
+    return;
+  }
+  if (file.print(message))
+  {
+    Serial.println("- message appended");
+  }
+  else
+  {
+    Serial.println("- append failed");
+  }
+  file.close();
+}
+
+void WCRToSPIFFS(String data)
+{
+  //  deleteFile(SPIFFS, "/hello.txt");
+  data += ',';
+  const char *dataStr = data.c_str();
+  wAppendFile(SPIFFS, "/hello.txt", dataStr);
+  //  readFile(SPIFFS, "/hello.txt");
+}
 
 void handlecylinder()
 {
@@ -313,29 +370,43 @@ void handlecylinder()
   if (server.hasArg("Va"))
   {
     String value = server.arg("Va");
-   DynamicJsonDocument jsonDocWR(1024);
+    Serial.println(value);
+    DynamicJsonDocument jsonDocWR(1024);
     deserializeJson(jsonDocWR, value);
-    wcrFlag = true;//jsonDocWR["SF"];
-    SERIAL_PRINTLN("CR Req: " + String(wcrFlag));
-        if (wifiDisBuzzer == 0)
+    int type = jsonDocWR["Ty"].as<int>();
+    if (type == 10)
+    {
+      // esp to app req
+      WSPIFFStoCR();
+    }
+    else if (type == 9)
+    {
+      // app to esp req
+      WCRToSPIFFS(value);
+      jsonDocWT["Re"] = 1;
+      serializeJson(jsonDocWT, wData);
+      server.send(200, "text/json", wData);
+    }
+    else
+    {
+      jsonDocWT["Re"] = 0;
+      serializeJson(jsonDocWT, wData);
+      server.send(400, "text/json", wData);
+    }
+    if (wifiDisBuzzer == 0)
     {
       buzzerBeepAck();
     }
-        jsonDocWT["Re"] = 1;
-    serializeJson(jsonDocWT, wData);
-    server.send(200, "text/json", wData);
-     server.stop(); // Stops the server
-        return;
-    
+    return;
   }
   jsonDocWT["Re"] = 0;
   serializeJson(jsonDocWT, wData);
   server.send(400, "text/json", wData);
-  }
+}
 
 void handleSensor()
 {
- //   delay(100);
+  //   delay(100);
 
   DynamicJsonDocument jsonDocWT(1024);
   String wData;
@@ -391,7 +462,7 @@ void checkForUDPRequest()
 void monitorWiFi()
 {
   //     SERIAL_PRINTLN("Entered in WIFI task!");
-//Serial.println("Free Heap: " + String(ESP.getFreeHeap()));
+  // Serial.println("Free Heap: " + String(ESP.getFreeHeap()));
 
   if (ssid != nullptr && ssid[0] != '\0')
   {
@@ -406,12 +477,15 @@ void monitorWiFi()
         SERIAL_PRINTLN("Connecting to " + String(ssid) + ":" + String(password));
         vTaskDelay(3000 / portTICK_PERIOD_MS);
       }
-       if (WiFi.status() == WL_CONNECTED) {
+      if (WiFi.status() == WL_CONNECTED)
+      {
         SERIAL_PRINTLN("WiFi reconnected, restarting server...");
         server.begin();
-    } else {
+      }
+      else
+      {
         SERIAL_PRINTLN("WiFi connection still failed after reconnect attempts.");
-    }
+      }
       SERIAL_PRINT("Dynamic IP Address: ");
       SERIAL_PRINTLN(WiFi.localIP());
       if (!MDNS.begin("sakha-i"))
@@ -445,12 +519,11 @@ void monitorWiFi()
       checkForUDPRequest();
     }
   }
-    // if (WiFi.status() == WL_CONNECTED) {
-    //     SERIAL_PRINTLN("WiFi");
-    //    // server.begin();
-    // } else {
-    //     SERIAL_PRINTLN("WiFi connection still failed after reconnect attempts.");
-    // }
-        server.begin();
-
+  // if (WiFi.status() == WL_CONNECTED) {
+  //     SERIAL_PRINTLN("WiFi");
+  //    // server.begin();
+  // } else {
+  //     SERIAL_PRINTLN("WiFi connection still failed after reconnect attempts.");
+  // }
+  server.begin();
 }

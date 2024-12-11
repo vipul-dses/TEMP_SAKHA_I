@@ -39,10 +39,6 @@ bool wR = false;
 int wifilwarmupSensor;
 bool wWS = false;
 bool wGraph = false;
-bool wRM=false;
-int wRegulatorMode;
-float wContainerWeight;
-bool wCW =false;
 WebServer server(80);
 #define UDP_PORT 50023
 WiFiUDP udp;
@@ -144,8 +140,7 @@ void handleRegulator()
     // JsonDocument jsonDoc;
     DynamicJsonDocument jsonDocWR(1024);
     deserializeJson(jsonDocWR, value);
-    wRegulatorMode = jsonDocWR["RMo"]; // regulator_mode
-        wRM=true;
+    regulatorMode = jsonDocWR["RMo"]; // regulator_mode
     jsonDocWR["Re"] = 1;              // response: success
     if (wifiDisBuzzer == 0)
     {
@@ -178,8 +173,7 @@ void handleContainer()
     deserializeJson(jsonDocWR, value);
 
     deserializeJson(jsonDocWR, value);
-    wContainerWeight = jsonDocWR["CW"]; // container_weight
-    wCW=true;
+    containerWeight = jsonDocWR["CW"]; // container_weight
     jsonDocWR["Re"] = 1;               // response: success
     serializeJson(jsonDocWR, dataToBeSent);
     Serial.println("Sent: " + dataToBeSent);

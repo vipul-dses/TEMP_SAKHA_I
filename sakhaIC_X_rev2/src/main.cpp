@@ -48,7 +48,7 @@ void Task1code(void *pvParameters)
         buzzerBeepR();
       }
     }
-    // Serial.printf("Task11111111: %u\n", stackWaterMark);
+    Serial.printf("Task11111111: %u\n", stackWaterMark);
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
@@ -77,7 +77,7 @@ void Task2code(void *pvParameters)
     monitorDisplay();
 
     // monitorDisplay();
-      // Serial.printf("Task2222: %u\n", stackWaterMark);
+    // Serial.printf("Task2222: %u\n", stackWaterMark);
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
@@ -86,7 +86,7 @@ void Task3code(void *pvParameters)
 {
   for (;;)
   {
-     UBaseType_t stackWaterMark = uxTaskGetStackHighWaterMark(Task3);
+    UBaseType_t stackWaterMark = uxTaskGetStackHighWaterMark(Task3);
     if (bNP)
     {
       mPreferences.begin("mD", false);
@@ -220,10 +220,9 @@ void Task3code(void *pvParameters)
     if (!bGraph)
     {
       monitorBle();
-      
     }
 
-   //Serial.printf("Task333333: %u\n", stackWaterMark);
+    // Serial.printf("Task333333: %u\n", stackWaterMark);
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
@@ -284,17 +283,16 @@ void Task4code(void *pvParameters)
       BLE_PRINTLN("Saved data in regulatorMode: " + String(regulatorMode));
       wRM = false;
     }
-    else if(wER)
+    else if (wER)
     {
-        enReminder = wifiEnReminder;
+      enReminder = wifiEnReminder;
       mPreferences.begin("mD", false);
       mPreferences.putInt("eR", enReminder);
       mPreferences.end();
       BLE_PRINTLN("Saved data in enReminder: " + String(enReminder));
       wER = false;
-
     }
-        else if (wR)
+    else if (wR)
     {
       remDay = wifiRemDay;
       remHour = wifiRemHour;
@@ -333,10 +331,6 @@ void Task4code(void *pvParameters)
 
     //   CRToSPIFFS();
     // }
-    else if (wcrFlag)
-    {
-      SPIFFStoCR();
-    }
     if (!wGraph)
     {
       monitorWiFi();
@@ -347,13 +341,13 @@ void Task4code(void *pvParameters)
     WRMo = regulatorMode;
     WCW = containerWeight;
     WTW = totalWeight;
-    WER= enReminder;
-    WRD=remDay;
-    WRH=remHour;
-    WRMi=remMinute;
-    WRMe=remMessage;
+    WER = enReminder;
+    WRD = remDay;
+    WRH = remHour;
+    WRMi = remMinute;
+    WRMe = remMessage;
 
-  //  Serial.printf("Task4444444: %u\n", stackWaterMark);
+    //  Serial.printf("Task4444444: %u\n", stackWaterMark);
 
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }
@@ -433,7 +427,7 @@ void Task5code(void *pvParameters)
         }
       }
     }
- // Serial.printf("Task555555: %u\n", stackWaterMark);
+    // Serial.printf("Task555555: %u\n", stackWaterMark);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
@@ -467,7 +461,7 @@ void Task6code(void *pvParameters)
         //       SERIAL_PRINTLN("timer triggered: ");
       }
     }
-  //   Serial.printf("Task666666: %u\n", stackWaterMark);
+    //   Serial.printf("Task666666: %u\n", stackWaterMark);
     vTaskDelay(2000 / portTICK_PERIOD_MS);
   }
 }
@@ -494,7 +488,7 @@ void Task7code(void *pvParameters)
     {
       greenColor();
     }
- //    Serial.printf("Task7777777: %u\n", stackWaterMark);
+    //    Serial.printf("Task7777777: %u\n", stackWaterMark);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
@@ -510,11 +504,10 @@ void Task8code(void *pvParameters)
       {
         buzzerRunout();
       }
-   }
-   //  Serial.printf("Task888888: %u\n", stackWaterMark);
+    }
+    //  Serial.printf("Task888888: %u\n", stackWaterMark);
     vTaskDelay(3600000 / portTICK_PERIOD_MS);
-      //  vTaskDelay(36 / portTICK_PERIOD_MS);
-
+    //  vTaskDelay(36 / portTICK_PERIOD_MS);
   }
 }
 
@@ -562,7 +555,7 @@ void setup()
   delay(10);
   // Task detects the level of gas concentration,
   // determines whether the reminder is set, and sounds a buzzer if the set time and the actual time match.
-  xTaskCreatePinnedToCore(Task1code, "Task1", 1800, NULL, 1, &Task1, 1); // stack size changed to 1000 from 4000 on 02-12-24
+  xTaskCreatePinnedToCore(Task1code, "Task1", 3000, NULL, 1, &Task1, 1); // stack size changed to 1000 from 4000 on 02-12-24
   delay(10);
   // Task2 display various content on the display
   xTaskCreatePinnedToCore(Task2code, "Task2", 1800, NULL, 1, &Task2, 1);
