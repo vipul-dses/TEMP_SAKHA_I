@@ -9,6 +9,7 @@
 #include "buzzerLib.h"
 #include "espCom.h"
 #include "displayLib.h"
+#include "otaLib.h"
 int BGC;
 String BWN;
 int BDB;
@@ -76,6 +77,11 @@ class SakhaCCharacteristicsCallback : public BLECharacteristicCallbacks
     void onWrite(BLECharacteristic *pCharacteristic)
     {
         std::string characteristicValue = pCharacteristic->getValue();
+        bool isOTA = checkAndStartOTA(characteristicValue);
+        if (isOTA)
+        {
+            return;
+        }
         if (characteristicValue.length() > 0)
         {
             DynamicJsonDocument jsonDocBR(1024);
@@ -173,13 +179,13 @@ class SakhaCCharacteristicsCallback : public BLECharacteristicCallbacks
                 bGraph = true;
                 Serial.println("Received data for blContainerWeight: " + String(blGetGraph));
                 break;
-            case 9:   //store cylinder records to SPIFFS
-        serializeJson(jsonDocBR, testString);
-      //  Serial.println(testString);
-        crDataflag=true;
-               // SERIAL_PRINTLN("Received data for CR: " + blCRCT + " " + blCROP + " " + String(blCRCW) + " " + String(blCRGW)+ " " +blCRDD+ " " + String(blCRAD));
+            case 9: // store cylinder records to SPIFFS
+                serializeJson(jsonDocBR, testString);
+                //  Serial.println(testString);
+                crDataflag = true;
+                // SERIAL_PRINTLN("Received data for CR: " + blCRCT + " " + blCROP + " " + String(blCRCW) + " " + String(blCRGW)+ " " +blCRDD+ " " + String(blCRAD));
                 break;
-            case 10:   //Send cylinder record from SPIFFS to APP
+            case 10: // Send cylinder record from SPIFFS to APP
                 blcrFlag = true;
                 Serial.println("Request for cylinder records: " + String(blcrFlag));
                 break;

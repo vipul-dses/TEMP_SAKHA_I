@@ -14,6 +14,7 @@ Last update on:6/7/2024*/
 #include "espCom.h"
 #include "Preferences.h"
 #include "flashMemory.h"
+#include "otaLib.h"
 Preferences mPreferences;
 TaskHandle_t Task1;
 TaskHandle_t Task2;
@@ -536,6 +537,11 @@ void initializeData()
 void setup()
 {
   Serial.begin(115200);
+  bool isOTA = checkAndResumeOTA();
+  if (isOTA)
+  {
+    return;
+  }
   initializeData();
   eData();
   initializeCom();
