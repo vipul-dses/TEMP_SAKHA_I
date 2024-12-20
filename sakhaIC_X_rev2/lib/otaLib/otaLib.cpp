@@ -72,6 +72,11 @@ class BeginSizeCallback : public BLECharacteristicCallbacks
             return;
         }
 
+        if (value.length() >= 6 && value.substr(0, 6) == "{\"Ty\":")
+        {
+            return;
+        }
+
         int sizeInt = std::stoi(value);
         // Cast the integer to uint8_t
         totalSize = static_cast<uint8_t>(sizeInt);
@@ -100,6 +105,11 @@ class FirmwareCallback : public BLECharacteristicCallbacks
         // debugPrintHex(data, length);
 
         if (value.length() < 1)
+        {
+            return;
+        }
+
+        if (value.length() >= 6 && value.substr(0, 6) == "{\"Ty\":")
         {
             return;
         }
@@ -144,6 +154,11 @@ class EndCallback : public BLECharacteristicCallbacks
         // debugPrintHex(data, length);
 
         if (value.length() < 1)
+        {
+            return;
+        }
+
+        if (value.length() >= 6 && value.substr(0, 6) == "{\"Ty\":")
         {
             return;
         }
