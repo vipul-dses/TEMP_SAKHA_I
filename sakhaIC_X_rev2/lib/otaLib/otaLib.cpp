@@ -3,14 +3,12 @@
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
-#include <BLE2902.h>
 #include <Update.h>
 
-#define SERVICE_UUID "018dda31-e845-76a5-8a25-50c037092ab9"
-#define RX_BEGIN_SIZE "018dda33-099e-7906-bd75-05afa51d3164"
-#define RX_FIRMWARE "9be184e6-d9d9-4a29-acba-433566696577"
-#define RX_END "b1088b44-6c83-4105-a8b6-b570bc00c74c"
-#define CHARACTERISTIC_UUID_TX "018dda33-4afe-7fdb-94fa-6aeb182982c7"
+#define SERVICE_UUID "2e9141d9-9a00-4c86-b512-8134b0e43070"
+#define RX_BEGIN_SIZE "6b59e69e-da9f-4ab3-96f5-61aba4015e66"
+#define RX_FIRMWARE "0709e586-629e-40c2-afd2-fb9c2ab32422"
+#define RX_END "8cd4e413-99d0-4000-bdc4-07f5092f9a08"
 
 #define OTA_BEGIN "ota_begin"
 #define OTA_END "ota_end"
@@ -72,17 +70,13 @@ class BeginSizeCallback : public BLECharacteristicCallbacks
             return;
         }
 
-        if (value.length() >= 6 && value.substr(0, 6) == "{\"Ty\":")
-        {
-            return;
-        }
-
-        int sizeInt = std::stoi(value);
-        // Cast the integer to uint8_t
-        totalSize = static_cast<uint8_t>(sizeInt);
+        totalSize = (data[3] << 24) |
+                    (data[2] << 16) |
+                    (data[1] << 8) |
+                    data[0];
         // Begin OTA update
         Serial.println("OTA: Begin");
-        Serial.println("OTA: Total Size: " + totalSize);
+        // Serial.println("OTA: Total Size: " + totalSize);
         if (!Update.begin(totalSize))
         {
             Serial.println("OTA: Result: Failure");
@@ -109,16 +103,11 @@ class FirmwareCallback : public BLECharacteristicCallbacks
             return;
         }
 
-        if (value.length() >= 6 && value.substr(0, 6) == "{\"Ty\":")
-        {
-            return;
-        }
-
         // Write data
         size_t writtenBytes = Update.write(data, length);
 
         // Debug write info
-        Serial.print("Writing bytes: ");
+        Serial.print("Written bytes: ");
         Serial.print(writtenBytes);
         Serial.print(" of ");
         Serial.println(length);
@@ -158,11 +147,6 @@ class EndCallback : public BLECharacteristicCallbacks
             return;
         }
 
-        if (value.length() >= 6 && value.substr(0, 6) == "{\"Ty\":")
-        {
-            return;
-        }
-
         if (Update.end(true))
         {
             Serial.println("OTA: Result: Success");
@@ -193,9 +177,6 @@ void initializeBLE()
 
     BLEService *pService = otaBLEServer->createService(SERVICE_UUID);
 
-    txCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_TX, BLECharacteristic::PROPERTY_NOTIFY);
-    txCharacteristic->addDescriptor(new BLE2902());
-
     BLECharacteristic *beginSizeCharacteristic = pService->createCharacteristic(RX_BEGIN_SIZE, BLECharacteristic::PROPERTY_WRITE);
     beginSizeCharacteristic->setCallbacks(new BeginSizeCallback());
 
@@ -208,6 +189,11 @@ void initializeBLE()
     pService->start();
 
     otaBLEServer->getAdvertising()->start();
+
+    BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+    pAdvertising->addServiceUUID(SERVICE_UUID);
+    pAdvertising->setScanResponse(true);
+    BLEDevice::startAdvertising();
 
     Serial.println("OTA: BLE server started");
 }
@@ -244,6 +230,7 @@ bool checkAndStartOTA(std::string data)
     {
         Serial.println("OTA: Restart ESP");
         setOTA(true);
+        // BLEDevice::deinit(true);
         ESP.restart();
         return true;
     }
