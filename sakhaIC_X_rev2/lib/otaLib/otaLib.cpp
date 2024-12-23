@@ -5,10 +5,10 @@
 #include <BLEUtils.h>
 #include <Update.h>
 
-#define SERVICE_UUID "2e9141d9-9a00-4c86-b512-8134b0e43070"
-#define RX_BEGIN_SIZE "6b59e69e-da9f-4ab3-96f5-61aba4015e66"
-#define RX_FIRMWARE "0709e586-629e-40c2-afd2-fb9c2ab32422"
-#define RX_END "8cd4e413-99d0-4000-bdc4-07f5092f9a08"
+#define SERVICE_UUID "018dda31-e845-76a5-8a25-50c037092ab9"
+#define RX_BEGIN_SIZE "018dda33-099e-7906-bd75-05afa51d3164"
+#define RX_FIRMWARE "9be184e6-d9d9-4a29-acba-433566696577"
+#define RX_END "b1088b44-6c83-4105-a8b6-b570bc00c74c"
 
 #define OTA_BEGIN "ota_begin"
 #define OTA_END "ota_end"
