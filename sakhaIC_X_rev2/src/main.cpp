@@ -15,6 +15,7 @@ Last update on:6/7/2024*/
 #include "Preferences.h"
 #include "flashMemory.h"
 #include "otaLib.h"
+#include "firebaseLib.h"
 Preferences mPreferences;
 TaskHandle_t Task1;
 TaskHandle_t Task2;
@@ -25,6 +26,7 @@ TaskHandle_t Task6;
 TaskHandle_t Task7;
 TaskHandle_t Task8;
 
+uint8_t gasConcentration = 0;
 int disBuzzer;
 int enReminder;
 int remDay;
@@ -63,6 +65,13 @@ void Task2code(void *pvParameters)
     iW = wC;
     iR = enReminder;
     GC = gasConc;
+    mPreferences.begin("mD", false);
+    mPreferences.putInt("gC", gasConc);
+    mPreferences.end();
+    if (gasConc != 0)
+    {
+      ESP.restart();
+    }
     HR = cHour;
     ME = cMinute;
     DY = cDay;
@@ -531,18 +540,36 @@ void initializeData()
   SERIAL_PRINTLN("Saved data in regulatorMode: " + String(regulatorMode));
   containerWeight = mPreferences.getFloat("cW", containerWeight);
   SERIAL_PRINTLN("Saved data in containerWeight: " + String(containerWeight));
+  gasConcentration = mPreferences.getInt("gC", 0);
   mPreferences.end();
 }
 
 void setup()
 {
   Serial.begin(115200);
+  initializeData();
   bool isOTA = checkAndResumeOTA();
   if (isOTA)
   {
     return;
   }
-  initializeData();
+  bool isGasLeak = gasConcentration != 0;
+  if (isGasLeak)
+  {
+    mPreferences.begin("mD", false);
+    mPreferences.putInt("gC", 0);
+    mPreferences.end();
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED)
+    {
+      delay(1000);
+      Serial.println("Connecting to WiFi...");
+    }
+    Serial.println("Connected to WiFi");
+    sendFCMMessage(createGasLeakJsonPayload(gasConcentration));
+    ESP.restart();
+    return;
+  }
   eData();
   initializeCom();
   initializeTime();
