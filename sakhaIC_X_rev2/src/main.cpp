@@ -559,7 +559,12 @@ void setup()
     mPreferences.begin("mD", false);
     mPreferences.putInt("gC", 0);
     mPreferences.end();
-    WiFi.begin(ssid, password);
+    if (wifiName.c_str() == nullptr || wifiName.c_str()[0] == '\0')
+    {
+      ESP.restart();
+      return;
+    }
+    WiFi.begin(wifiName, wifiPass);
     while (WiFi.status() != WL_CONNECTED)
     {
       delay(1000);
