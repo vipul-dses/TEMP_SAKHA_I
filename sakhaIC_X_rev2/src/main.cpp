@@ -1,7 +1,3 @@
-/*Sakha-C Beta update
-Uploded into new Sakha-I units
-Sakha-W ESP8266 variant
-Last update on:6/7/2024*/
 #include "Arduino.h"
 #include "config.h"
 #include "sensorLib.h"
@@ -87,7 +83,7 @@ void Task2code(void *pvParameters)
     monitorDisplay();
 
     // monitorDisplay();
-    // Serial.printf("Task2222: %u\n", stackWaterMark);
+    // SERIAL_PRINTLN("Task2222: %u\n", stackWaterMark);
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
@@ -165,15 +161,6 @@ void Task3code(void *pvParameters)
     else if (bRM)
     {
       regulatorMode = blRegulatorMode;
-      //  stopScroll = false;
-      //  monitorDisplay();
-      //  if(regulatorMode)
-      //  {
-      //   screenAck("Regulator Mode ON:", 0);
-      //  }
-      //  else{
-      //  screenAck("Regulator Mode OFF:", 0);
-      //  }
       mPreferences.begin("mD", false);
       mPreferences.putInt("rM", regulatorMode);
       mPreferences.end();
@@ -183,9 +170,9 @@ void Task3code(void *pvParameters)
     else if (bCW)
     {
       containerWeight = blContainerWeight;
-      // stopScroll = false;
-      // monitorDisplay();
-      // screenAck("Received CW:", blContainerWeight);
+      stopScroll = false;
+      monitorDisplay();
+      screenAck("Received CW:", blContainerWeight);
       mPreferences.begin("mD", false);
       mPreferences.putFloat("cW", containerWeight);
       mPreferences.end();
@@ -232,7 +219,7 @@ void Task3code(void *pvParameters)
       monitorBle();
     }
 
-    // Serial.printf("Task333333: %u\n", stackWaterMark);
+    // SERIAL_PRINTLN("Task333333: %u\n", stackWaterMark);
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
@@ -257,17 +244,6 @@ void Task4code(void *pvParameters)
     else if (wDB)
     {
       disBuzzer = wifiDisBuzzer;
-      //   stopScroll = false;
-      //   monitorDisplay();
-      //  // delay(10);
-      //   if (disBuzzer)
-      //   {
-      //     screenAck("Buzzer turned OFF", 0);
-      //   }
-      //   if (!disBuzzer)
-      //   {
-      //     screenAck("Buzzer turned ON", 0);
-      //   }
       mPreferences.begin("mD", false);
       mPreferences.putInt("dB", disBuzzer);
       mPreferences.end();
