@@ -47,7 +47,7 @@ void Task1code(void *pvParameters)
         buzzerBeepR();
       }
     }
-    Serial.printf("Task11111111: %u\n", stackWaterMark);
+    //Serial.printf("Task11111111: %u\n", stackWaterMark);
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
@@ -83,7 +83,7 @@ void Task2code(void *pvParameters)
     monitorDisplay();
 
     // monitorDisplay();
-    // SERIAL_PRINTLN("Task2222: %u\n", stackWaterMark);
+     //Serial.printf("Task2222: %u\n", stackWaterMark);
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
@@ -196,15 +196,7 @@ void Task3code(void *pvParameters)
     BRH = remHour;
     BRMi = remMinute;
     BRMe = remMessage;
-    //    totalWeightstr=String(totalWeight);
-    // indexDecimal=  totalWeightstr.indexOf('.');
-    //         Serial.print("index is : ");
-    // Serial.println(indexDecimal);
-    // totalWeightstr=totalWeightstr.substring(0,indexDecimal+2);
-    ////Serial.print("before conversion: ");
-    // Serial.println(totalWeight);
-    // Serial.print("after conversion: ");
-    // Serial.println(totalWeightstr);
+
     BTW = totalWeight;
     BCW = containerWeight;
     BRMo = regulatorMode;
@@ -219,7 +211,7 @@ void Task3code(void *pvParameters)
       monitorBle();
     }
 
-    // SERIAL_PRINTLN("Task333333: %u\n", stackWaterMark);
+    // Serial.printf("Task333333: %u\n", stackWaterMark);
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
@@ -236,9 +228,7 @@ void Task4code(void *pvParameters)
     {
       cTime = wifiTime;
       updateTime();
-      // stopScroll = false;
-      // monitorDisplay();
-      // screenAck("Time Updated", 0);
+
       wT = false;
     }
     else if (wDB)
@@ -253,16 +243,6 @@ void Task4code(void *pvParameters)
     else if (wRM)
     {
       regulatorMode = wRegulatorMode;
-      // stopScroll = false;
-      // monitorDisplay();
-      // if (regulatorMode)
-      // {
-      //   screenAck("Regulator mode is ON", 0);
-      // }
-      // else
-      // {
-      //   screenAck("Regulator mode is OFF", 0);
-      // }
       mPreferences.begin("mD", false);
       mPreferences.putInt("rM", regulatorMode);
       mPreferences.end();
@@ -333,7 +313,7 @@ void Task4code(void *pvParameters)
     WRMi = remMinute;
     WRMe = remMessage;
 
-    //  Serial.printf("Task4444444: %u\n", stackWaterMark);
+    //Serial.printf("Task4444444: %u\n", stackWaterMark);
 
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }

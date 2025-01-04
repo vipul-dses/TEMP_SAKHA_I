@@ -1,0 +1,60 @@
+      // stopScroll = false;
+      // monitorDisplay();
+      // if (regulatorMode)
+      // {
+      //   screenAck("Regulator mode is ON", 0);
+      // }
+      // else
+      // {
+      //   screenAck("Regulator mode is OFF", 0);
+      // }
+
+
+    //    totalWeightstr=String(totalWeight);
+    // indexDecimal=  totalWeightstr.indexOf('.');
+    //         Serial.print("index is : ");
+    // Serial.println(indexDecimal);
+    // totalWeightstr=totalWeightstr.substring(0,indexDecimal+2);
+    ////Serial.print("before conversion: ");
+    // Serial.println(totalWeight);
+    // Serial.print("after conversion: ");
+    // Serial.println(totalWeightstr);
+
+      void SPIFFStoCR()
+{
+  Serial.println("123456");
+  // File file = SPIFFS.open("/hello.txt");
+  File file = SPIFFS.open("/hello.txt", "r");
+  if (!file)
+  {
+    Serial.println("- failed to open file for reading");
+    return;
+  }
+
+  Serial.println("- read from file:");
+  String data1;
+  while (file.available())
+  {
+    //   Serial.write(file.read());
+    data1 += (char)file.read();
+  }
+  file.close();
+  String data2 = "{\"Re\": 1, \"data\": [";
+  data1.remove(data1.length() - 1);
+  Serial.println(data1);
+  String data3 = "]}";
+  String data4 = data2 + data1 + data3;
+  if (blcrFlag)
+  {
+    pTxCharacteristic->setValue(data4.c_str());
+    pTxCharacteristic->notify();
+    // Serial.println("CR Data sent: " + data4);
+    blcrFlag = false;
+  }
+  if (wcrFlag)
+  {
+    server.send(200, "text/json", data4);
+    Serial.println("Wi-Fi Data sent: " + data4);
+    wcrFlag = false;
+  }
+}

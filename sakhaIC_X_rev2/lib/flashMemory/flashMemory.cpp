@@ -17,17 +17,22 @@
 #define MAX_ENTRIES 720
 Preferences sPreferences;
 
+#include "timeLib.h"
+#define FORMAT_SPIFFS_IF_FAILED true
+
 const int buttonPin = 0;
 int fileCounter = 0;
 int fileNumber;
 String dumpFilePath;
 String myFilePath;
-#include "timeLib.h"
-#define FORMAT_SPIFFS_IF_FAILED true
+
 float gasWeigh = 0.0;
 uint32_t gasTime = 0;
 String totalWeightstr;
 int indexDecimal;
+int fileIndexCr;
+int lastIndex;
+
 /***************************************list directories ***************************************/
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
 {
@@ -48,12 +53,34 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
   File file = root.openNextFile();
   while (file)
   {
-    // Skip hello.txt
-    if (strcmp(file.name(), "hello.txt") == 0)
+    // Check if the file name is in the range 1000.txt to 1050.txt
+    String fileName = file.name();
+    if (fileName.endsWith(".txt"))
     {
-      file = root.openNextFile();
-      continue;
+      // Extract the numeric part of the filename
+      int lastSlash = fileName.lastIndexOf('/');
+      int dotIndex = fileName.lastIndexOf('.');
+      String baseName = fileName.substring(lastSlash + 1, dotIndex); // Numeric part only
+
+      // Convert to integer
+      int fileNumber = baseName.toInt();
+
+      // Skip if fileNumber is in the range 1000 to 1050
+      if (fileNumber >= 1000 && fileNumber <= 1050)
+      {
+        Serial.print("Skipping file: ");
+        Serial.println(fileName);
+        file = root.openNextFile(); // Move to the next file
+        continue;                   // Skip processing for this file
+      }
     }
+
+    // // Skip hello.txt
+    // if (strcmp(file.name(), "hello.txt") == 0)
+    // {
+    //   file = root.openNextFile();
+    //   continue;
+    // }
     if (file.isDirectory())
     {
       Serial.print("  DIR : ");
@@ -82,7 +109,7 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
         {
           pTxCharacteristic->setValue(data.c_str());
           pTxCharacteristic->notify();
-  //        Serial.println("Bl Data sent: " + data);
+          //        Serial.println("Bl Data sent: " + data);
         }
         if (wGraph)
         {
@@ -188,6 +215,9 @@ void deleteFile(fs::FS &fs, const char *path)
     Serial.println("- delete failed");
   }
 }
+
+/***************************************SPIFFS Intialization ***************************************/
+
 void initSPIFFS()
 {
   if (!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED))
@@ -196,10 +226,10 @@ void initSPIFFS()
     return;
   }
 }
-
+/***************************************************************************/
+// Writing Gas consumption data into SPIFFS received from SAKHA-IW via ESP-NOW
 void writeToSPIFFS()
 {
-
   if (true)
   {
     delay(50);
@@ -226,8 +256,6 @@ void writeToSPIFFS()
     gasWeigh = monitorCom();
     totalWeightstr = String(gasWeigh);
     indexDecimal = totalWeightstr.indexOf('.');
-    //         Serial.print("index is : ");
-    // Serial.println(indexDecimal);
     totalWeightstr = totalWeightstr.substring(0, indexDecimal + 2);
     fileNumber = fileCounter;
     DynamicJsonDocument jsonDocSPIF(512);
@@ -247,54 +275,124 @@ void writeToSPIFFS()
     // deleteFile(SPIFFS, "/0.txt");
   }
 }
-
+/******************************************************************/
+// Store cylinder records into SPIFFS which is received from App
 void CRToSPIFFS()
 {
-//  deleteFile(SPIFFS, "/hello.txt");
+  //  deleteFile(SPIFFS, "/hello.txt");
+  sPreferences.begin("mD", false);
+  fileIndexCr = sPreferences.getInt("eC", fileIndexCr);
+  if (fileIndexCr == 0)
+  {
+    fileIndexCr = 1000;
+  }
+  Serial.print("fileCounter:");
+  Serial.println(fileIndexCr);
+  Serial.println("received CR data.");
   Serial.println(testString);
   testString += ',';
   const char *testStr = testString.c_str();
-  appendFile(SPIFFS, "/hello.txt", testStr);
+  String myfileIndexStr = "/" + String(fileIndexCr) + ".txt";
+  const char *fileIndexStr = myfileIndexStr.c_str();
+  writeFile(SPIFFS, fileIndexStr, testStr);
+  // appendFile(SPIFFS, "/hello.txt", testStr);
   //  readFile(SPIFFS, "/hello.txt");
+  readFile(SPIFFS, fileIndexStr);
+  fileIndexCr = fileIndexCr + 1;
+  sPreferences.begin("mD", false);
+  sPreferences.putInt("eC", fileIndexCr);
+  sPreferences.end();
+  testString = ""; // Clear the string
+  Serial.println("testString has been reset for new data.");
+  Serial.println(testString);
 
   crDataflag = false;
 }
 
+
+void WCRToSPIFFS(String data)
+{
+  testString=data;
+ sPreferences.begin("mD", false);
+  fileIndexCr = sPreferences.getInt("eC", fileIndexCr);
+  if (fileIndexCr == 0)
+  {
+    fileIndexCr = 1000;
+  }
+  Serial.print("wiFi fileCounter:");
+  Serial.println(fileIndexCr);
+  Serial.println("received CR data.");
+  Serial.println(testString);
+  testString += ',';
+  const char *testStr = testString.c_str();
+  String myfileIndexStr = "/" + String(fileIndexCr) + ".txt";
+  const char *fileIndexStr = myfileIndexStr.c_str();
+  writeFile(SPIFFS, fileIndexStr, testStr);
+  // appendFile(SPIFFS, "/hello.txt", testStr);
+  //  readFile(SPIFFS, "/hello.txt");
+  readFile(SPIFFS, fileIndexStr);
+  fileIndexCr = fileIndexCr + 1;
+  sPreferences.begin("mD", false);
+  sPreferences.putInt("eC", fileIndexCr);
+  sPreferences.end();
+  testString = ""; // Clear the string
+  Serial.println("testString has been reset for new data.");
+  Serial.println(testString);
+
+  crDataflag = false;
+}
+/******************************************************************/
+// Retrieve cylinder record from SPIFFS to app
 void SPIFFStoCR()
 {
-  Serial.println("123456");
-  // File file = SPIFFS.open("/hello.txt");
-  File file = SPIFFS.open("/hello.txt", "r");
-  if (!file)
+  Serial.println("CR Transfer function");
+  String data1 = "";
+  String data2 = "{\"Re\": 1, \"data\": [";
+  for (int crFile = 1000; crFile <= 1050; crFile++)
   {
-    Serial.println("- failed to open file for reading");
-    return;
-  }
+    String filename = "/" + String(crFile) + ".txt"; // Generate filename
+    File file = SPIFFS.open(filename, "r");
+    if (!file)
+    {
+      Serial.println("- failed to open file: " + filename);
+      continue; // Skip to the next file
+    }
 
-  Serial.println("- read from file:");
-  String data1;
-  while (file.available())
-  {
- //   Serial.write(file.read());
-    data1 += (char)file.read();
-  }
-file.close();
-String data2 = "{\"Re\": 1, \"data\": [";
-data1.remove(data1.length()-1);
-  Serial.println(data1);
-  String data3="]}";
-  String data4 =data2+data1+data3;
-  if(blcrFlag)
-  {
-  pTxCharacteristic->setValue(data4.c_str());
-  pTxCharacteristic->notify();
- // Serial.println("CR Data sent: " + data4);
-  blcrFlag = false;
-  }
-  if(wcrFlag)
-  {
-     server.send(200, "text/json", data4);
-          Serial.println("Wi-Fi Data sent: " + data4);
-    wcrFlag=false;
+    // Serial.println("- reading from file: " + filename);
+
+    while (file.available())
+    {
+      data1 += (char)file.read();
+    }
+    //  Serial.println("Data sent: " + data1);
+    int data1Len = data1.length();
+    Serial.println("File length: " + String(data1Len));
+    data1.remove(data1.length() - 1);
+    String data3 = "]}";
+    String data4 = data2 + data1 + data3;
+    // Serial.println("CR Data sent: " + data4);
+    file.close();
+    if (data1Len == 0)
+    {
+      crFile = 1051;
+      blcrFlag = false;
+      wcrFlag = false;
+    }
+    if (blcrFlag)
+    {
+      pTxCharacteristic->setValue(data4.c_str());
+      pTxCharacteristic->notify();
+      Serial.println("CR Data sent: " + data4);
+      data4 = "";
+      
+    }
+    // if (wcrFlag)
+    // {
+    //   server.send(200, "text/json", data4);
+    //   Serial.println("Wi-Fi Data sent print: " + data4);
+    //   data4 = "";  
+    // }
+    data1 = "";
+    data1Len = 0;
   }
 }

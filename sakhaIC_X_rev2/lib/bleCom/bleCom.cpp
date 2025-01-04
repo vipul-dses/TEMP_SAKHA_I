@@ -62,7 +62,7 @@ class SakhaCServerCallback : public BLEServerCallbacks
     void onConnect(BLEServer *pServer)
     {
         deviceConnected++;
-        buzzerBeepAck();
+       // buzzerBeepAck();
         SERIAL_PRINTLN("BLE Device connected");
     }
     void onDisconnect(BLEServer *pServer)
@@ -92,7 +92,10 @@ class SakhaCCharacteristicsCallback : public BLECharacteristicCallbacks
             case 0:
                 wifiName = jsonDocBR["WN"].as<String>();
                 wifiPass = jsonDocBR["WP"].as<String>();
-                buzzerBeepAck();
+                if (blDisBuzzer == 0)
+                {
+                    buzzerBeepAck();
+                }
                 bNP = true;
                 SERIAL_PRINTLN("Received data for namePass: " + wifiName + " " + wifiPass);
                 break;
