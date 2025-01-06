@@ -47,7 +47,7 @@ void yellowColor()
 void whiteColor()
 {
     //setColor(255, 255, 255);
-    setColor(0, 0, 0);  //CA
+    setColor(25, 0, 0);  //CA
    // SERIAL_PRINTLN("White color activated");
 }
 

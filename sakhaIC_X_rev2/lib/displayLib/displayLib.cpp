@@ -300,12 +300,14 @@ void screenAck(String msg, float blecontainer)
         {
             display.setFont(Arimo_Regular_24);
             display.drawString(64, 30, String(blecontainer) + " KG");
+           // 
         }
         display.display();
+       // delay(2000);
         notificationStartTime = millis();
         isNotificationActive = true;
 
-     //   stopScroll = true;
+      //  stopScroll = true;
     }
 
    

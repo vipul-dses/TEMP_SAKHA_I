@@ -341,8 +341,8 @@ void WCRToSPIFFS(String data)
 
   crDataflag = false;
 }
-/******************************************************************/
-// Retrieve cylinder record from SPIFFS to app
+/**************************************************************************************************************/
+// Retrieve cylinder record from SPIFFS and sends to app
 void SPIFFStoCR()
 {
   Serial.println("CR Transfer function");

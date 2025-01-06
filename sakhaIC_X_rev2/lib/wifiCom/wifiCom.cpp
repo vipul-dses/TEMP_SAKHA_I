@@ -45,6 +45,9 @@ bool wRM = false;
 int wRegulatorMode;
 float wContainerWeight;
 bool wCW = false;
+
+extern int trolleyStatus;
+
 WebServer server(80);
 #define UDP_PORT 50023
 WiFiUDP udp;
@@ -76,6 +79,7 @@ void handleData()
   jsonDocWT["CW"] = WCW;
   jsonDocWT["RMo"] = WRMo;
   jsonDocWT["BP"] = incomingbatteryVoltage;
+  jsonDocWT["TS"] = trolleyStatus;
 
   String wData;
   serializeJson(jsonDocWT, wData);
@@ -315,7 +319,7 @@ void WSPIFFStoCR()
     File file = SPIFFS.open(filename, "r");
     if (!file)
     {
-      Serial.println("- failed to open file: " + filename);
+    //  Serial.println("- failed to open file: " + filename);
       continue; // Skip to the next file
     }
    // Serial.println("- reading from file: " + filename);
@@ -332,18 +336,18 @@ void WSPIFFStoCR()
     
     file.close();
   }
-  Serial.println("Combined Data:");
-  Serial.println(data1);
+  // Serial.println("Combined Data:");
+  // Serial.println(data1);
   data1.remove(data1.length() - 1);
   String data3 = "]}";
 
   String data4 = data2 + data1 + data3;
-  Serial.println("CR Data sent: " + data4);
+//  Serial.println("CR Data sent: " + data4);
   
   if (wcrFlag)
   {
     server.send(200, "text/json", data4);
-    Serial.println("Wi-Fi Data sent print: " + data4);
+  //  Serial.println("Wi-Fi Data sent print: " + data4);
     data4 = "";
     data1 = ""; // Clear data1 for the next file
    

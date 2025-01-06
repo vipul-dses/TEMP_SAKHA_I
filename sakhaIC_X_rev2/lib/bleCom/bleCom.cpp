@@ -10,27 +10,45 @@
 #include "espCom.h"
 #include "displayLib.h"
 #include "otaLib.h"
+//BGC variable stores gas concentration in task3Code via monitorSensor() function
 int BGC;
+//BWN variable stores WiFi name in task3Code received via BLE App
 String BWN;
+//BDB variable stores buzzer status in task3Code received via BLE App
 int BDB;
+//BER variable stores reminder status in task3Code received via BLE App
 int BER;
+//BRD variable stores reminder date in task3Code received via BLE App
 int BRD;
+//BRH variable stores reminder hour in task3Code received via BLE App
 int BRH;
+//BRMi variable stores reminder hour in task3Code received via BLE App
 int BRMi;
+//BRMe variable stores reminder message in task3Code received via BLE App
 String BRMe;
-// float BTW;
+//BTW variable stores total weight in task3Code which is received from Sakha-IW via ESP-NOW
 float BTW;
+//BCW variable stores container weight in task3Code received via BLE App
 float BCW;
+//BRMo variable stores regulator mode status in task3Code received via BLE App
 int BRMo;
 String wifiName;
 String wifiPass;
+//nNP flag indicates WiFi credentials received in BLE mode
 bool bNP = false;
+//blTime variable stores updated sync time received from BLE app
 String blTime;
+//Bt flag indicates sync time command received from BLE app 
 bool bT = false;
+//blDisBuzzer variable store buzzer status received from BLE app
 int blDisBuzzer;
+//bDB flag indicates buzzer modification received from BLE app 
 bool bDB = false;
+//blEnReminder variable stores value reminder status received from BLE app
 int blEnReminder;
+//bER flag indicates enable status is modified from BLE app
 bool bER = false;
+
 int blRemDay;
 int blRemHour;
 int blRemMinute;
@@ -49,6 +67,8 @@ bool bGraph;
 bool blcrFlag;
 String testString;
 bool crDataflag;
+
+extern int trolleyStatus;
 
 BLEServer *pServer = NULL;
 BLECharacteristic *pTxCharacteristic;
@@ -191,7 +211,7 @@ class SakhaCCharacteristicsCallback : public BLECharacteristicCallbacks
             case 10: // Send cylinder record from SPIFFS to APP
                 blcrFlag = true;
                 Serial.println("Request for cylinder records: " + String(blcrFlag));
-                break;
+                break;    
             }
         }
         characteristicValue.clear();
@@ -232,6 +252,7 @@ void monitorBle()
         jsonDocBT["CW"] = BCW;
         jsonDocBT["RMo"] = BRMo;
         jsonDocBT["BP"] = incomingbatteryVoltage;
+        jsonDocBT["TS"] =trolleyStatus;
         String bData;
         serializeJson(jsonDocBT, bData);
         pTxCharacteristic->setValue(bData.c_str());

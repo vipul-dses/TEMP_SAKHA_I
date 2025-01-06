@@ -12,6 +12,7 @@
 #include "flashMemory.h"
 #include "otaLib.h"
 #include "firebaseLib.h"
+
 Preferences mPreferences;
 TaskHandle_t Task1;
 TaskHandle_t Task2;
@@ -29,17 +30,22 @@ int remDay;
 int remHour;
 int remMinute;
 String remMessage;
+//stores last stored value where ESP-NOW is received
 unsigned long previousMillis = 0;
+//ESP-NOW data should receive before 65 minutes 
 const long period = 3900000;
-// String totalWeightstr;
-// int indexDecimal;
+//trolleyStatus indicates status of Sakha-W trolley 
+int trolleyStatus=0;
+/****************************************************************************************************************************************/
+
+// Task1code Monitors reminder condition
 void Task1code(void *pvParameters)
 {
   for (;;)
   {
     UBaseType_t stackWaterMark = uxTaskGetStackHighWaterMark(Task1);
     monitorTime();
-    if (gasConc < 2 && enReminder == 1 && (remDay == rDay || remDay == 0) && remHour == rHour && remMinute == rMinute)
+    if (gasConc < 2 && (enReminder == 1) && (remDay == rDay || remDay == 0) && remHour == rHour && remMinute == rMinute)
     {
       yellowColor();
       if (disBuzzer == 0)
@@ -47,12 +53,14 @@ void Task1code(void *pvParameters)
         buzzerBeepR();
       }
     }
-    //Serial.printf("Task11111111: %u\n", stackWaterMark);
+    // Serial.printf("Task11111111: %u\n", stackWaterMark);
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
 
+/****************************************************************************************************************************************/
+//Task2code handles display related paramters
 void Task2code(void *pvParameters)
 {
   for (;;)
@@ -81,13 +89,13 @@ void Task2code(void *pvParameters)
     GW = gasWeight;
 
     monitorDisplay();
-
-    // monitorDisplay();
-     //Serial.printf("Task2222: %u\n", stackWaterMark);
-
+    // Serial.printf("Task2222: %u\n", stackWaterMark);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
+
+/****************************************************************************************************************************************/
+//Task3code handels Bluetooth communication
 void Task3code(void *pvParameters)
 {
   for (;;)
@@ -108,26 +116,11 @@ void Task3code(void *pvParameters)
 
       cTime = blTime;
       updateTime();
-      // stopScroll = false;
-      // monitorDisplay();
-      // screenAck("Time Updated", 0);
       bT = false;
     }
     else if (bDB)
     {
       disBuzzer = blDisBuzzer;
-      // stopScroll = false;
-      // monitorDisplay();
-
-      // if (disBuzzer)
-      // {
-      //   screenAck("Buzzer turned OFF", 0);
-      // }
-      // else
-      // {
-      //    screenAck("Buzzer turned ON", 0);
-      // }
-
       mPreferences.begin("mD", false);
       mPreferences.putInt("dB", disBuzzer);
       mPreferences.end();
@@ -181,7 +174,6 @@ void Task3code(void *pvParameters)
     }
     else if (crDataflag)
     {
-
       CRToSPIFFS();
     }
     else if (blcrFlag)
@@ -196,7 +188,6 @@ void Task3code(void *pvParameters)
     BRH = remHour;
     BRMi = remMinute;
     BRMe = remMessage;
-
     BTW = totalWeight;
     BCW = containerWeight;
     BRMo = regulatorMode;
@@ -210,12 +201,13 @@ void Task3code(void *pvParameters)
     {
       monitorBle();
     }
-
     // Serial.printf("Task333333: %u\n", stackWaterMark);
-
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
+
+/****************************************************************************************************************************************/
+
 
 void Task4code(void *pvParameters)
 {
@@ -312,12 +304,13 @@ void Task4code(void *pvParameters)
     WRH = remHour;
     WRMi = remMinute;
     WRMe = remMessage;
-
-    //Serial.printf("Task4444444: %u\n", stackWaterMark);
-
+    Serial.printf("Task4444444: %u\n", stackWaterMark);
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }
 }
+
+/****************************************************************************************************************************************/
+
 void Task5code(void *pvParameters)
 {
   for (;;)
@@ -326,9 +319,6 @@ void Task5code(void *pvParameters)
     if (bWS)
     {
       wWS = true;
-      stopScroll = false;
-      monitorDisplay();
-      screenAck("Sensor Warming up", 0);
       iS = false;
       for (int i = 0; i < 300; i++)
       {
@@ -398,6 +388,8 @@ void Task5code(void *pvParameters)
   }
 }
 
+/****************************************************************************************************************************************/
+
 void Task6code(void *pvParameters)
 {
   for (;;)
@@ -407,12 +399,14 @@ void Task6code(void *pvParameters)
     {
       iE = false;
       whiteColor();
+      trolleyStatus=1;
     }
 
     else if (eD)
     {
       if (eDCounter > 0)
       {
+        trolleyStatus=1;
         previousMillis = millis(); // Reset timer when eD becomes true
         eDCounter = 0;             // Mark timer as started
       }
@@ -432,6 +426,8 @@ void Task6code(void *pvParameters)
   }
 }
 
+/****************************************************************************************************************************************/
+//Task7code Monitors gas weight and takes action according to weight
 void Task7code(void *pvParameters)
 {
   for (;;)
@@ -459,6 +455,8 @@ void Task7code(void *pvParameters)
   }
 }
 
+/****************************************************************************************************************************************/
+//Task8code Monitors gas run out condition
 void Task8code(void *pvParameters)
 {
   for (;;)
@@ -476,6 +474,8 @@ void Task8code(void *pvParameters)
     //  vTaskDelay(36 / portTICK_PERIOD_MS);
   }
 }
+
+/****************************************************************************************************************************************/
 
 void initializeData()
 {
@@ -549,7 +549,7 @@ void setup()
   delay(10);
   // Task detects the level of gas concentration,
   // determines whether the reminder is set, and sounds a buzzer if the set time and the actual time match.
-  xTaskCreatePinnedToCore(Task1code, "Task1", 3000, NULL, 1, &Task1, 1); // stack size changed to 1000 from 4000 on 02-12-24
+  xTaskCreatePinnedToCore(Task1code, "Task1", 4000, NULL, 1, &Task1, 1); // stack size changed to 1000 from 4000 on 02-12-24
   delay(10);
   // Task2 display various content on the display
   xTaskCreatePinnedToCore(Task2code, "Task2", 1800, NULL, 1, &Task2, 1);

@@ -41,10 +41,10 @@ extern float blContainerWeight;
 extern bool bCW;
 extern bool bGraph;
 
-
 extern bool blcrFlag;
 extern bool crDataflag;
 extern String testString;
+
 
 // Initialize BLE communication
 void initializeBle();
