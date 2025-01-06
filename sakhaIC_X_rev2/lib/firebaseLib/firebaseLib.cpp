@@ -2,6 +2,8 @@
 #include <ESP_Signer.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include <WiFi.h>
+#include <timeLib.h>
 
 bool firebaseInitialized = false;
 
@@ -118,7 +120,13 @@ String createGasLeakJsonPayload(uint8_t gasConcentration)
     notification["body"] = gasConcentration > 2 ? "Major gas leak has been detected!" : "Minor gas leak has been detected!";
 
     JsonObject data = message["data"].to<JsonObject>();
-    data["GC"] = String(gasConcentration);
+    data["MT"] = "1";              // 0: app notification, 1: device alert
+    data["AT"] = "0";              // 0: gas leak, 1: gas runout
+    data["Ts"] = getUnix() * 1000; // time in millis
+    String wifiMac = WiFi.macAddress();
+    wifiMac.replace(":", "");
+    data["WM"] = wifiMac;                  // wifi mac without colons (:)
+    data["GC"] = String(gasConcentration); // gas concentration
 
     // Serialize JSON document to a String for printing
     String jsonPayload;
