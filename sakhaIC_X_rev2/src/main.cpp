@@ -47,13 +47,14 @@ void Task1code(void *pvParameters)
     monitorTime();
     if (gasConc < 2 && (enReminder == 1) && (remDay == rDay || remDay == 0) && remHour == rHour && remMinute == rMinute)
     {
+      reminderOn=true;
       yellowColor();
       if (disBuzzer == 0)
       {
         buzzerBeepR();
       }
     }
-    // Serial.printf("Task11111111: %u\n", stackWaterMark);
+   //  Serial.printf("update2 %u\n", stackWaterMark);
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
@@ -304,7 +305,7 @@ void Task4code(void *pvParameters)
     WRH = remHour;
     WRMi = remMinute;
     WRMe = remMessage;
-    Serial.printf("Task4444444: %u\n", stackWaterMark);
+   // Serial.printf("Task4444444: %u\n", stackWaterMark);
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }
 }

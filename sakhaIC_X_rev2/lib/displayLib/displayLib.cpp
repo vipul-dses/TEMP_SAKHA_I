@@ -4,6 +4,7 @@
 #include "SPI.h"
 #include "espCom.h"
 #include "bleCom.h"
+#include "timeLib.h"
 
 SH1106Wire display(0x3c, SDA, SCL);
 #define DEMO_DURATION 3000
@@ -28,6 +29,7 @@ float TW;
 float CW;
 int GP;
 float GW;
+bool reminderOn =false;
 
 #define Bluetooth_width 12
 #define Bluetooth_height 12
@@ -188,7 +190,7 @@ void screenTwo()
 
 void screenThree()
 {
-    if (GC < 2 && iR == 0)
+    if (GC < 2 && (!reminderOn))
     {
         display.clear();
         display.setTextAlignment(TEXT_ALIGN_CENTER);
@@ -219,7 +221,7 @@ void screenThree()
         delay(DEMO_DURATION);
         currentLineIndex = (currentLineIndex + 1) % (sizeof(textLines) / sizeof(String));
     }
-    else if (GC < 2 && iR == 1)
+    else if (reminderOn)
     {
         display.clear();
         display.setTextAlignment(TEXT_ALIGN_CENTER);
@@ -227,6 +229,7 @@ void screenThree()
         display.drawString(64, 0, "Reminder");
         display.drawStringMaxWidth(64, 15, 128, RM);
         display.display();
+        reminderOn=false;
     }
     else if (GC >= 2)
     {

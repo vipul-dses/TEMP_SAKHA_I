@@ -17,6 +17,7 @@ extern float CW;
 extern int GP;
 extern float GW;
 extern bool stopScroll;
+extern bool reminderOn;
 // This function sets up the necessary configurations and parameters for the display.
 void initializeDisplay();
 void screenAck(String, float);
