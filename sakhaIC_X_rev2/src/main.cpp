@@ -30,12 +30,12 @@ int remDay;
 int remHour;
 int remMinute;
 String remMessage;
-//stores last stored value where ESP-NOW is received
+// stores last stored value where ESP-NOW is received
 unsigned long previousMillis = 0;
-//ESP-NOW data should receive before 65 minutes 
+// ESP-NOW data should receive before 65 minutes
 const long period = 3900000;
-//trolleyStatus indicates status of Sakha-W trolley 
-int trolleyStatus=0;
+// trolleyStatus indicates status of Sakha-W trolley
+int trolleyStatus = 0;
 /****************************************************************************************************************************************/
 
 // Task1code Monitors reminder condition
@@ -61,7 +61,7 @@ void Task1code(void *pvParameters)
 }
 
 /****************************************************************************************************************************************/
-//Task2code handles display related paramters
+// Task2code handles display related paramters
 void Task2code(void *pvParameters)
 {
   for (;;)
@@ -96,7 +96,7 @@ void Task2code(void *pvParameters)
 }
 
 /****************************************************************************************************************************************/
-//Task3code handels Bluetooth communication
+// Task3code handels Bluetooth communication
 void Task3code(void *pvParameters)
 {
   for (;;)
@@ -208,7 +208,6 @@ void Task3code(void *pvParameters)
 }
 
 /****************************************************************************************************************************************/
-
 
 void Task4code(void *pvParameters)
 {
@@ -400,14 +399,14 @@ void Task6code(void *pvParameters)
     {
       iE = false;
       whiteColor();
-      trolleyStatus=1;
+      trolleyStatus = 1;
     }
 
     else if (eD)
     {
       if (eDCounter > 0)
       {
-        trolleyStatus=1;
+        trolleyStatus = 1;
         previousMillis = millis(); // Reset timer when eD becomes true
         eDCounter = 0;             // Mark timer as started
       }
@@ -428,7 +427,7 @@ void Task6code(void *pvParameters)
 }
 
 /****************************************************************************************************************************************/
-//Task7code Monitors gas weight and takes action according to weight
+// Task7code Monitors gas weight and takes action according to weight
 void Task7code(void *pvParameters)
 {
   for (;;)
@@ -457,7 +456,7 @@ void Task7code(void *pvParameters)
 }
 
 /****************************************************************************************************************************************/
-//Task8code Monitors gas run out condition
+// Task8code Monitors gas run out condition
 void Task8code(void *pvParameters)
 {
   for (;;)
