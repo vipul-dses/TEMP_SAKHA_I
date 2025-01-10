@@ -233,7 +233,7 @@ void writeToSPIFFS()
   if (true)
   {
     delay(50);
-    sPreferences.begin("mD", false);
+    sPreferences.begin("eC", false);
     fileCounter = sPreferences.getInt("eC", fileCounter);
     Serial.println("Loaded counter: " + String(fileCounter));
     // counter=0;
@@ -243,7 +243,7 @@ void writeToSPIFFS()
       fileCounter = 1;
     }
     Serial.println(fileCounter);
-    sPreferences.begin("mD", false);
+    sPreferences.begin("eC", false);
     sPreferences.putInt("eC", fileCounter);
     sPreferences.end();
     Serial.println("Updated counter: " + String(fileCounter));
@@ -280,7 +280,7 @@ void writeToSPIFFS()
 void CRToSPIFFS()
 {
   //  deleteFile(SPIFFS, "/hello.txt");
-  sPreferences.begin("mD", false);
+  sPreferences.begin("eC", false);
   fileIndexCr = sPreferences.getInt("eC", fileIndexCr);
   if (fileIndexCr == 0)
   {
@@ -299,7 +299,7 @@ void CRToSPIFFS()
   //  readFile(SPIFFS, "/hello.txt");
   readFile(SPIFFS, fileIndexStr);
   fileIndexCr = fileIndexCr + 1;
-  sPreferences.begin("mD", false);
+  sPreferences.begin("eC", false);
   sPreferences.putInt("eC", fileIndexCr);
   sPreferences.end();
   testString = ""; // Clear the string
@@ -313,14 +313,17 @@ void CRToSPIFFS()
 void WCRToSPIFFS(String data)
 {
   testString=data;
- sPreferences.begin("mD", false);
+ sPreferences.begin("eC", false);
   fileIndexCr = sPreferences.getInt("eC", fileIndexCr);
+    Serial.print("Get wiFi fileCounter:");
+  Serial.println(fileIndexCr);
+    sPreferences.end();
+
   if (fileIndexCr == 0)
   {
     fileIndexCr = 1000;
   }
-  Serial.print("wiFi fileCounter:");
-  Serial.println(fileIndexCr);
+
   Serial.println("received CR data.");
   Serial.println(testString);
   testString += ',';
@@ -332,9 +335,11 @@ void WCRToSPIFFS(String data)
   //  readFile(SPIFFS, "/hello.txt");
   readFile(SPIFFS, fileIndexStr);
   fileIndexCr = fileIndexCr + 1;
-  sPreferences.begin("mD", false);
+  sPreferences.begin("eC", false);
   sPreferences.putInt("eC", fileIndexCr);
   sPreferences.end();
+    Serial.print("Set wiFi fileCounter:");
+  Serial.println(fileIndexCr);
   testString = ""; // Clear the string
   Serial.println("testString has been reset for new data.");
   Serial.println(testString);

@@ -90,7 +90,7 @@ void Task2code(void *pvParameters)
     GW = gasWeight;
 
     monitorDisplay();
-    // Serial.printf("Task2222: %u\n", stackWaterMark);
+     Serial.printf("Task2222: %u\n", stackWaterMark);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
@@ -304,7 +304,12 @@ void Task4code(void *pvParameters)
     WRH = remHour;
     WRMi = remMinute;
     WRMe = remMessage;
-   // Serial.printf("Task4444444: %u\n", stackWaterMark);
+  //   int wificounter;
+  //   wificounter=wificounter+1;
+  //   Serial.printf("Task4444444: %u\n", stackWaterMark);
+  //   Serial.print("Free PSRAM Size: ");
+  // Serial.print(ESP.getFreePsram()); // Convert bytes to KB
+  // Serial.println(" KB");
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }
 }
@@ -399,7 +404,7 @@ void Task6code(void *pvParameters)
     {
       iE = false;
       whiteColor();
-      trolleyStatus = 1;
+      trolleyStatus = 0;
     }
 
     else if (eD)
@@ -556,7 +561,7 @@ void setup()
   delay(10);
   xTaskCreatePinnedToCore(Task3code, "Task3", 3000, NULL, 1, &Task3, 0);
   delay(10);
-  xTaskCreatePinnedToCore(Task4code, "Task4", 3000, NULL, 1, &Task4, 0);
+  xTaskCreatePinnedToCore(Task4code, "Task4", 4000, NULL, 1, &Task4, 1);
   delay(10);
   initializeSensor();
   iS = true;

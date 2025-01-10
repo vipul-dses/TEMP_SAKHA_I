@@ -72,5 +72,5 @@ uint32_t getUnix()
   //  TIME_PRINTLN(now.unixtime());
  //  TIME_PRINTLN("s = ");
  //   TIME_PRINTLN(now.unixtime() / 86400L);
-    return now.unixtime();
+    return now.unixtime()-19800;
 }

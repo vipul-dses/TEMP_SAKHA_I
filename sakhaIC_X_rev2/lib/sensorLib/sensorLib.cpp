@@ -35,7 +35,7 @@ void monitorSensor()
     int averageReading = digitalReading / 500;
     GAS_PRINTLN("Average Reading: " + String(averageReading));
     gasConc = round(averageReading * 10.0 / 4095.0);
-    //gasConc=4;
+   // gasConc=4;
     GAS_PRINTLN("Gas Concentration: " + String(gasConc) + " PPM");
 }
 

@@ -80,6 +80,7 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
     Serial.print("incomingCW: ");
     Serial.println(incomingCW);
 
+  ePreferences.begin("mB", false);
   ePreferences.putInt("mB", incomingbatteryVoltage);
   ePreferences.begin("eD", false);
   ePreferences.putFloat("tW", totalWeight);

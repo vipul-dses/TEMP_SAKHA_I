@@ -83,8 +83,17 @@ void handleData()
 
   String wData;
   serializeJson(jsonDocWT, wData);
-  server.send(200, "text/json", wData);
-  SERIAL_PRINTLN("WiFi Data Sent: " + wData);
+  // server.send(200, "text/json", wData);
+  // SERIAL_PRINTLN("WiFi Data Sent: " + wData);
+  if (WiFiClient client = server.client()) {
+    if (client.connected()) {
+        server.send(200, "text/json", wData);
+        SERIAL_PRINTLN("WiFi Data Sent: " + wData);
+    } else {
+        SERIAL_PRINTLN("Client disconnected, cannot send data.");
+    }
+}
+
   server.stop(); // Stops the server
   return;
 }
@@ -284,7 +293,6 @@ void handleReminder()
   server.send(400, "text/json", wData);
 }
 
-
 void handlegraph()
 {
   DynamicJsonDocument jsonDocWT(1024);
@@ -307,7 +315,6 @@ void handlegraph()
   server.send(400, "text/json", wData);
 }
 
-
 void WSPIFFStoCR()
 {
   Serial.println("CR WIFI function");
@@ -317,23 +324,28 @@ void WSPIFFStoCR()
   {
     String filename = "/" + String(i) + ".txt"; // Generate filename
     File file = SPIFFS.open(filename, "r");
+    Serial.print("  FILE: ");
+    Serial.print(file.name());
+    Serial.print("\tSIZE: ");
+    Serial.println(file.size());
+    if (file.size() == 0)
+    {
+      i = 1051;
+    }
     if (!file)
     {
-    //  Serial.println("- failed to open file: " + filename);
+      //  Serial.println("- failed to open file: " + filename);
+
       continue; // Skip to the next file
     }
-   // Serial.println("- reading from file: " + filename);
+    // Serial.println("- reading from file: " + filename);
     while (file.available())
     {
       data1 += (char)file.read();
     }
     int data1Len = data1.length();
-    //Serial.println("File length: " + String(data1Len));
-    if (data1Len == 0)
-    {
-      i = 1051;
-    }
-    
+    Serial.println("File length: " + String(i));
+
     file.close();
   }
   // Serial.println("Combined Data:");
@@ -342,21 +354,26 @@ void WSPIFFStoCR()
   String data3 = "]}";
 
   String data4 = data2 + data1 + data3;
-//  Serial.println("CR Data sent: " + data4);
-  
+  Serial.println("CR Data sent: " + data4);
+
   if (wcrFlag)
   {
-    server.send(200, "text/json", data4);
-  //  Serial.println("Wi-Fi Data sent print: " + data4);
+      if (WiFiClient client = server.client()) {
+    if (client.connected()) {
+        server.send(200, "text/json", data4);
+    //    SERIAL_PRINTLN("WiFi Data Sent: " + data4);
+    } else {
+        SERIAL_PRINTLN("Client disconnected, cannot send data.");
+    }
+}
+  //  server.send(200, "text/json", data4);
+    //  Serial.println("Wi-Fi Data sent print: " + data4);
     data4 = "";
     data1 = ""; // Clear data1 for the next file
-   
+
     delay(100);
   }
-  
 }
-
-
 
 void handlecylinder()
 {
