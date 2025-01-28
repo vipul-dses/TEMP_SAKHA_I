@@ -45,16 +45,9 @@ void monitorTime()
  //   TIME_PRINTLN(String(rDay) + ", " + String(rHour) + ":" + String(rMinute));
 
     bool isPM = now.isPM();
-    if (isPM || (rHour >= 8 && rHour <= 11))
-    {
-        sHour = "PM";
-      //  TIME_PRINTLN("PM");
-    }
-    else
-    {
-        sHour = "AM";
-     //   TIME_PRINTLN("AM");
-    }
+sHour = isPM ? "PM" : "AM";
+ //   TIME_PRINTLN(sHour);
+
 }
 
 void updateTime()
@@ -65,12 +58,19 @@ void updateTime()
     rtc.adjust(newTime);
 }
 
+// uint32_t getUnix()
+// {
+//     DateTime now = rtc.now();
+//   //    TIME_PRINTLN(" since midnight 1/1/1970 = ");
+//   //  TIME_PRINTLN(now.unixtime());
+//  //  TIME_PRINTLN("s = ");
+//  //   TIME_PRINTLN(now.unixtime() / 86400L);
+//     return now.unixtime()-19800;
+// }
 uint32_t getUnix()
 {
     DateTime now = rtc.now();
-  //    TIME_PRINTLN(" since midnight 1/1/1970 = ");
-  //  TIME_PRINTLN(now.unixtime());
- //  TIME_PRINTLN("s = ");
- //   TIME_PRINTLN(now.unixtime() / 86400L);
-    return now.unixtime();
+    uint32_t unixTime = now.unixtime() - 19800;
+    Serial.println(unixTime); // Print the value to confirm it's in seconds
+    return unixTime;
 }

@@ -153,12 +153,12 @@ void screenTwo()
         display.setFont(Arimo_Regular_12);
         display.drawString(64, 0, "Notification");
         display.setFont(Arimo_Regular_24);
-        display.drawString(64, 12, String(1) + " %");
+        display.drawString(64, 12, String(0) + " %");
         display.setFont(Arimo_Regular_18);
         display.drawString(64, 38, "Gas Runout");
         display.display();
     }
-    else if (iE && GW >= 0.0 && GW <= 0.15)
+    else if (iE && GW > 0.01 && GW <= 0.15)
     {
         display.clear();
         display.setTextAlignment(TEXT_ALIGN_CENTER);
@@ -190,7 +190,8 @@ void screenTwo()
 
 void screenThree()
 {
-    if (GC < 2 && (!reminderOn))
+    if (GC < 2 
+    )
     {
         display.clear();
         display.setTextAlignment(TEXT_ALIGN_CENTER);

@@ -9,22 +9,21 @@
 
 Preferences mPreferences;
 
-
 // unit 50: 08:f9:e0:a3:a9:c0    //home unit
 //  unit 45:  08:f9:e0:af:67:44
 // unit 48    08:d1:f9:6c:73:44
 //  uint8_t broadcastAddress[] = {0xEC, 0x64, 0xC9, 0x0A, 0x28, 0x9C};    //SAKHAIW address
-//uint8_t broadcastAddress[] = {0x08, 0xD1, 0xF9, 0x6C, 0x73, 0x44}; // SAKHAIC address
-uint8_t broadcastAddress[] = {0x08, 0xF9, 0xE0, 0xA3, 0xA9, 0xC0};
+// uint8_t broadcastAddress[] = {0x08, 0xD1, 0xF9, 0x6C, 0x73, 0x44}; // SAKHAIC address ec:c9:ff:cc:64:50
+//uint8_t broadcastAddress[] = {0x08, 0xF9, 0xE0, 0xA3, 0xA9, 0xC0};   //16MB 
+uint8_t broadcastAddress[] = {0xEC, 0xC9, 0xFF, 0xCC, 0x64, 0x50};
 float myweight;
 int myChannel = 0;
 int failCounter = 0;
 int myID;
 
-
 int mutipleFailCounter = 0;
 bool enow = false;
-bool espNowFlag =false;
+bool espNowFlag = false;
 
 // Structure example to send data
 
@@ -72,20 +71,20 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
         Serial.print("\r\ntried entire channel for \t");
         Serial.println(mutipleFailCounter);
       }
-     
+
       failCounter = 0; // Reset the failure counter after incrementing the channel
     }
   }
   else
-  { 
+  {
     // Packet sent successfully
     greenColor();
-     espNowFlag=false;
+    espNowFlag = false;
     failCounter = 0; // Reset the failure counter on success
     mPreferences.begin("mD", false);
     Serial.println("Saved data in channel: " + String(myChannel));
     myChannel = mPreferences.putInt("wC", myChannel);
-delay(100);
+    delay(100);
     // delay(500);
     //  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
     //  Serial.println("Going to sleep now");
@@ -118,10 +117,8 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
   mPreferences.putFloat("CWnow", incomingCW);
   mPreferences.end();
   enow = true;
-      esp_now_deinit();
-     WiFi.mode(WIFI_OFF);
-
-
+  esp_now_deinit();
+  WiFi.mode(WIFI_OFF);
 }
 
 int printWiFiChannel()
@@ -144,12 +141,12 @@ void nowSend()
   //   Serial.print("ESP-NOW SENT Battery % : ");
   // Serial.println(getBatteryPercentage());
   outgoingReadings.w = weight; // readSensor();
- // outgoingReadings.cwnow = random(1, 30);
+                               // outgoingReadings.cwnow = random(1, 30);
   outgoingReadings.batterynow = getBatteryPercentage();
   outgoingReadings.regulatornow = 1;
   // Send message via ESP-NOW
   esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&outgoingReadings, sizeof(outgoingReadings));
- // delay(500);
+  // delay(500);
   if (result == ESP_OK)
   {
     Serial.println("Sent with success");
@@ -163,7 +160,7 @@ void nowSend()
 void nowInit()
 {
   WiFi.mode(WIFI_STA);
- 
+
   esp_wifi_set_channel(myChannel, WIFI_SECOND_CHAN_NONE);
 
   // Init ESP-NOW
@@ -176,7 +173,7 @@ void nowInit()
   // Once ESPNow is successfully Init, we will register for Send CB to
   // get the status of Trasnmitted packet
   esp_now_register_send_cb(OnDataSent);
-espNowFlag=true;
+  espNowFlag = true;
   // Register peer
   memcpy(peerInfo.peer_addr, broadcastAddress, 6);
   peerInfo.channel = 0;
@@ -190,9 +187,8 @@ espNowFlag=true;
   }
 
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
-  //delay(3000);
+  // delay(3000);
 }
-
 
 void eData()
 {

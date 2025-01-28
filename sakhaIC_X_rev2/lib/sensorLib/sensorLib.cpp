@@ -19,7 +19,7 @@ void initializeSensor()
     {
         unsigned long digitalReading = analogRead(MQ6);
         GAS_PRINTLN("Digital Reading: " + String(digitalReading));
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
     GAS_PRINTLN("Warm-up Complete");
 }
@@ -32,6 +32,7 @@ void monitorSensor()
         digitalReading += analogRead(MQ6);
         delayMicroseconds(10);
     }
+    GAS_PRINTLN("Average Digital Reading: " + String(digitalReading));
     int averageReading = digitalReading / 500;
     GAS_PRINTLN("Average Reading: " + String(averageReading));
     gasConc = round(averageReading * 10.0 / 4095.0);

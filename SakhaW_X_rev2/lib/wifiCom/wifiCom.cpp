@@ -101,14 +101,14 @@ void wAppendFile(fs::FS &fs, const char *path, const char *message)
   file.close();
 }
 
-void WCRToSPIFFS(String data)
-{
-  //  deleteFile(SPIFFS, "/hello.txt");
-  data += ',';
-  const char *dataStr = data.c_str();
-  wAppendFile(SPIFFS, "/hello.txt", dataStr);
-  //  readFile(SPIFFS, "/hello.txt");
-}
+// void WCRToSPIFFS(String data)
+// {
+//   //  deleteFile(SPIFFS, "/hello.txt");
+//   data += ',';
+//   const char *dataStr = data.c_str();
+//   wAppendFile(SPIFFS, "/hello.txt", dataStr);
+//   //  readFile(SPIFFS, "/hello.txt");
+// }
 void handleRoot()
 {
   DynamicJsonDocument jsonDocWT(1024);
@@ -330,10 +330,6 @@ void handlegraph()
     deserializeJson(jsonDocWR, value);
     wGraph = jsonDocWR["SF"];
     SERIAL_PRINTLN("Permission for graph: " + String(wGraph));
-    if (wifiDisBuzzer == 0)
-    {
-      buzzerBeepAck();
-    }
     jsonDocWT["Re"] = 1;
     serializeJson(jsonDocWT, wData);
     server.send(200, "text/json", wData);

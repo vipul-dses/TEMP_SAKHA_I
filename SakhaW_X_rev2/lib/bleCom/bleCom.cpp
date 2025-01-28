@@ -64,7 +64,7 @@ class SakhaCServerCallback : public BLEServerCallbacks
     void onConnect(BLEServer *pServer)
     {
         deviceConnected++;
-        buzzerBeepAck();
+        //buzzerBeepAck();
         SERIAL_PRINTLN("BLE Device connected");
     }
     void onDisconnect(BLEServer *pServer)
@@ -89,7 +89,7 @@ class SakhaCCharacteristicsCallback : public BLECharacteristicCallbacks
             case 0:
                 wifiName = jsonDocBR["WN"].as<String>();
                 wifiPass = jsonDocBR["WP"].as<String>();
-                buzzerBeepAck();
+               // buzzerBeepAck();
                 bNP = true;
                 SERIAL_PRINTLN("Received data for namePass: " + wifiName + " " + wifiPass);
                 break;
@@ -157,29 +157,17 @@ class SakhaCCharacteristicsCallback : public BLECharacteristicCallbacks
                 break;
             case 8:
                 blGetGraph = jsonDocBR["SF"];
-                if (blDisBuzzer == 0)
-                {
-                    buzzerBeepAck();
-                }
                 bGraph = true;
                 Serial.println("Received data for blContainerWeight: " + String(blGetGraph));
                 break;
             case 9: // store cylinder records to SPIFFS
                 serializeJson(jsonDocBR, testString);
-                if (blDisBuzzer == 0)
-                {
-                    buzzerBeepAck();
-                }
                 //  Serial.println(testString);
                 crDataflag = true;
                 // SERIAL_PRINTLN("Received data for CR: " + blCRCT + " " + blCROP + " " + String(blCRCW) + " " + String(blCRGW)+ " " +blCRDD+ " " + String(blCRAD));
                 break;
             case 10: // Send cylinder record from SPIFFS to APP
                 blcrFlag = true;
-                if (blDisBuzzer == 0)
-                {
-                    buzzerBeepAck();
-                }
                 Serial.println("Request for cylinder records: " + String(blcrFlag));
                 break;
             case 11:
@@ -228,7 +216,7 @@ void monitorBle()
         jsonDocBT["TW"] = BTW;
         jsonDocBT["CW"] = BCW;
         jsonDocBT["RMo"] = BRMo;
-        jsonDocBT["BP"] = 100;//getBatteryPercentage(); // incomingbatteryVoltage;
+        jsonDocBT["BP"] = getBatteryPercentage(); 
         jsonDocBT["MO"] = normalMode;
         String bData;
         serializeJson(jsonDocBT, bData);

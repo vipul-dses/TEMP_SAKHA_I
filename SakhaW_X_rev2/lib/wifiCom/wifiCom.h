@@ -39,5 +39,7 @@ extern bool wGraph;
 extern bool wcrFlag;
 // Monitor Wi-Fi communication
 void monitorWiFi();
+extern void WCRToSPIFFS(String);
+
 
 #endif

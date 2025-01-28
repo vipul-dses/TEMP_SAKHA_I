@@ -12,6 +12,7 @@
 #include "pinDefs.h"
 #include "Preferences.h"
 #include "flashMemory.h"
+#include "otaLib.h"
 
 Preferences mPreferences;
 float containerWeight;
@@ -48,7 +49,6 @@ void Task1code(void *pvParameters)
   {
     initializeBle();
   }
-  // nowInit();
   vTaskDelay(1000 / portTICK_PERIOD_MS);
 
   for (;;)
@@ -56,7 +56,15 @@ void Task1code(void *pvParameters)
     UBaseType_t stackWaterMark = uxTaskGetStackHighWaterMark(Task1);
    // readSensor();
     monitorTime();
-
+    if ((enReminder == 1) && (remDay == rDay || remDay == 0) && remHour == rHour && remMinute == rMinute)
+    {
+     // reminderOn=true;
+      yellowColor();
+      if (disBuzzer == 0)
+      {
+        buzzerBeepR();
+      }
+    }
     if (stopScroll)
     {
       monitorDisplay();
@@ -87,7 +95,6 @@ void Task1code(void *pvParameters)
       {
         writeToSPIFFS();
         sleepSensor();
-        //  delay(2000);
         turnOffScreen();
         esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP);
         Serial.println("Going to sleep now");
@@ -95,7 +102,6 @@ void Task1code(void *pvParameters)
       }
     }
     // Serial.printf("Task11111: %u\n", stackWaterMark);
-    //  nowSend();
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
@@ -178,20 +184,12 @@ void Task3code(void *pvParameters)
 
     else if (bModeFlag)
     {
-      stopScroll = false;
+
       normalMode = bMode;
       BLE_PRINTLN("Saved data in Mode: " + String(normalMode));
       mPreferences.begin("mD", false);
       mPreferences.putBool("MO", normalMode);
       mPreferences.end();
-      if (normalMode)
-      {
-        screenAck("Normal Mode ON", 0);
-      }
-      if (!normalMode)
-      {
-        screenAck("Power saving Mode", 0);
-      }
       bModeFlag = false;
     }
     else if (crDataflag)
@@ -202,7 +200,19 @@ void Task3code(void *pvParameters)
     {
       SPIFFStoCR();
     }
-    if (bGraph)
+
+
+    BWN = wifiName;
+    BDB = disBuzzer;
+    BER = enReminder;
+    BRD = remDay;
+    BRH = remHour;
+    BRMi = remMinute;
+    BRMe = remMessage;
+    BTW = weight;
+    BCW = containerWeight;
+    BRMo = regulatorMode;
+        if (bGraph)
     {
       delay(100);
       listDir(SPIFFS, "/", 0);
@@ -212,26 +222,6 @@ void Task3code(void *pvParameters)
     {
       monitorBle();
     }
-
-    BWN = wifiName;
-    BDB = disBuzzer;
-    BER = enReminder;
-    BRD = remDay;
-    BRH = remHour;
-    BRMi = remMinute;
-    BRMe = remMessage;
-    // totalWeightstr=String(totalWeight);
-    // indexDecimal=  totalWeightstr.indexOf('.');
-    // Serial.print("index is : ");
-    // Serial.println(indexDecimal);
-    // totalWeightstr=totalWeightstr.substring(0,indexDecimal+2);
-    // Serial.print("before conversion: ");
-    // Serial.println(totalWeight);
-    // Serial.print("after conversion: ");
-    // Serial.println(totalWeightstr);
-    // BTW = totalWeightstr;
-    BCW = containerWeight;
-    BRMo = regulatorMode;
     //  Serial.printf("Task333333: %u\n", stackWaterMark);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
@@ -249,22 +239,11 @@ void Task4code(void *pvParameters)
     {
       cTime = wifiTime;
       updateTime();
-      // stopScroll = false;
-      // screenAck("Time Updated", 0);
       wT = false;
     }
     else if (wDB)
     {
       disBuzzer = wifiDisBuzzer;
-      stopScroll = false;
-      // if (disBuzzer)
-      // {
-      //   screenAck("Buzzer turned OFF", 0);
-      // }
-      // if (!disBuzzer)
-      // {
-      //   screenAck("Buzzer turned ON", 0);
-      // }
       mPreferences.begin("mD", false);
       mPreferences.putInt("dB", disBuzzer);
       mPreferences.end();
@@ -274,15 +253,6 @@ void Task4code(void *pvParameters)
     else if (wRM)
     {
       regulatorMode = wRegulatorMode;
-     // stopScroll = false;
-      // if (regulatorMode)
-      // {
-      //   screenAck("Regulator mode is ON", 0);
-      // }
-      // else
-      // {
-      //   screenAck("Regulator mode is OFF", 0);
-      // }
       mPreferences.begin("mD", false);
       mPreferences.putInt("rM", regulatorMode);
       mPreferences.end();
@@ -317,7 +287,7 @@ void Task4code(void *pvParameters)
     else if (wCW)
     {
       containerWeight = wContainerWeight;
-   //   stopScroll = false;
+    stopScroll = false;
       screenAck("Received CW:", wContainerWeight);
       mPreferences.begin("mD", false);
       mPreferences.putFloat("cW", containerWeight);
@@ -327,19 +297,10 @@ void Task4code(void *pvParameters)
     }
     else if (wModeFlag)
     {
-  //    stopScroll = false;
       normalMode = wMode;
       mPreferences.begin("mD", false);
       mPreferences.putInt("MO", normalMode);
       mPreferences.end();
-      // if (normalMode)
-      // {
-      //   screenAck("Normal Mode ON", 0);
-      // }
-      // if (!normalMode)
-      // {
-      //   screenAck("Power saving Mode ON", 0);
-      // }
       wModeFlag = false;
     }
 
@@ -372,13 +333,13 @@ void Task7code(void *pvParameters)
   {
     UBaseType_t stackWaterMark = uxTaskGetStackHighWaterMark(Task7);
   //  monitorCom();
-  readSensor();
-  //Serial.println(gasWeight);
+  gasWeight=readSensor();
+  Serial.println(gasWeight);
     if (gasWeight < 0.0 && !bWS && !wWS && !(enReminder == 1 && (remDay == rDay || remDay == 0) && remHour == rHour && remMinute == rMinute))
     {
        lightColor();
     }
-    else if (gasWeight > 0.0 && gasWeight <= 1.0 && !bWS && !wWS && !(enReminder == 1 && (remDay == rDay || remDay == 0) && remHour == rHour && remMinute == rMinute))
+    else if (gasWeight >= 0.0 && gasWeight <= 1.0 && !bWS && !wWS && !(enReminder == 1 && (remDay == rDay || remDay == 0) && remHour == rHour && remMinute == rMinute))
     {
       blueColor();
     }
@@ -422,7 +383,11 @@ void setup()
   initializeLed();
   initializeBuzzer();
   initializeDisplay();
-
+  bool isOTA = checkAndResumeOTA();
+  if (isOTA)
+  {
+    return;
+  }
   initSPIFFS();
 
   xTaskCreatePinnedToCore(Task1code, "Task1", 4000, NULL, 1, &Task1, 0);

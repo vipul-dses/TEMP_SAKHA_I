@@ -34,28 +34,28 @@ float readSensor()
   sensorFlag = true;
   // WEIGHT_PRINT("flag status");
   // WEIGHT_PRINTLN(String(sensorFlag));
-  // WEIGHT_PRINT("Actual readSensor weight: ");
-  // WEIGHT_PRINTLN(String(weight) + " KG");
- // weight = 17.225; // for testing gas % below 1%
+  WEIGHT_PRINT("Actual readSensor weight: ");
+  WEIGHT_PRINTLN(String(weight) + " KG");
+  //weight = 20.20; // for testing gas % below 1%
 
-  if (weight >= 15.0)
+  if (containerWeight >= 15.0)
   {
     WEIGHT_PRINTLN("Gas Weight loop: " + String(weight) + " KG");
 
     float adjustment = (regulatorMode == 1) ? 0.5 : 0.0;
-    gasWeight = weight - (incomingCW + adjustment);
+    gasWeight = weight - (containerWeight + adjustment);
     WEIGHT_PRINTLN("container Weight loop: " + String(containerWeight) + " KG");
     if (containerWeight >= 15.0 && containerWeight < 18.0)
     {
-      // gasWeight = weight - (incomingCW + adjustment);
-      // gP = (gasWeight / dGW) * 100;
+      gasWeight = weight - (containerWeight + adjustment);
+      gP = (gasWeight / dGW) * 100;
       gasWeight = weight - (containerWeight + adjustment);
       WEIGHT_PRINTLN("Gas Weight: " + String(gasWeight) + " KG");
       if (gasWeight >= 0.02 && gasWeight <= 0.2)
       {
         gP = 1;
       }
-      else if (gasWeight < 0.02)
+      else if (gasWeight < 0.02 && gasWeight >= 0)
       {
         gP = 0;
       }
@@ -64,9 +64,9 @@ float readSensor()
         gP = (gasWeight / dGW) * 100;
       }
     }
-    else if (incomingCW >= 18.0 && incomingCW < 21.0)
+    else if (containerWeight >= 18.0 && containerWeight < 21.0)
     {
-      gasWeight = weight - (incomingCW + adjustment);
+      gasWeight = weight - (containerWeight + adjustment);
       gP = (gasWeight / cGW) * 100;
     }
     else
@@ -75,15 +75,14 @@ float readSensor()
       gasPercentage = -1.0;
     }
   }
-  // else
-  // {
-  //   gasWeight = -1.0;
-  //   gasPercentage = -1.0;
-  // }
-  gasPercentage = round(gP);
 
-  // WEIGHT_PRINTLN("Gas Weight: " + String(gasWeight) + " KG");
-  // WEIGHT_PRINTLN("Gas Percentage: " + String(gasPercentage) + " %");
+  gasPercentage = round(gP);
+  if (gasPercentage >= 100)
+  {
+    gasPercentage = 100;
+  }
+  WEIGHT_PRINTLN("Gas Weight: " + String(gasWeight) + " KG");
+  WEIGHT_PRINTLN("Gas Percentage: " + String(gasPercentage) + " %");
 
   return gasWeight;
 }
@@ -109,9 +108,10 @@ float getBatteryPercentage()
   const float adcReferenceVoltage = 3.3; // ESP32 ADC reference voltage (3.3V)
 
   // Voltage divider resistor values (adjust if you're using a divider)
-  const float R1 = 990.0;  // Resistor R1 in the voltage divider (in ohms)
-  const float R2 = 5000.0; // Resistor R2 in the voltage divider (in ohms)
-
+  // const float R1 = 990.0;  // Resistor R1 in the voltage divider (in ohms)
+  // const float R2 = 5000.0; // Resistor R2 in the voltage divider (in ohms)
+  const float R1 = 10000.0;  // Resistor R1 in the voltage divider (in ohms)
+  const float R2 = 100000.0; // Resistor R2 in the voltage divider (in ohms)
   // Calculate the divider ratio
   const float voltageDividerRatio = (R1 + R2) / R2;
 
@@ -119,9 +119,10 @@ float getBatteryPercentage()
   // BATTERY_LOG("ADC value: ");
   // BATTERY_LOGLN(adcValue);
   float batteryVoltage = (adcValue / maxADCValue) * adcReferenceVoltage * voltageDividerRatio;
-  batteryVoltage = batteryVoltage + 0.25;
-  // BATTERY_LOG("battery Voltage: ");
-  // BATTERY_LOGLN(batteryVoltage);
+  batteryVoltage = batteryVoltage;
+  Serial.print("battery Voltage: ");
+  Serial.println(batteryVoltage);
+
   if (batteryVoltage < 2.70)
   {
     return 10;

@@ -65,6 +65,7 @@ void firebaseInit()
     /* Seconds to refresh the token before expiry time (optional). Default is 60 sec.*/
     config.signer.preRefreshSeconds = 60;
 
+
     /** Assign the API scopes (required)
      * Use space or comma to separate the scope.
      */
@@ -122,12 +123,12 @@ String createGasLeakJsonPayload(uint8_t gasConcentration)
     JsonObject data = message["data"].to<JsonObject>();
     data["MT"] = "1";              // 0: app notification, 1: device alert
     data["AT"] = "0";              // 0: gas leak, 1: gas runout
-    data["Ts"] = getUnix() * 1000; // time in millis
+    data["Ts"] =String(getUnix() * 1000); // time in millis
     String wifiMac = WiFi.macAddress();
     wifiMac.replace(":", "");
     data["WM"] = wifiMac;                  // wifi mac without colons (:)
     data["GC"] = String(gasConcentration); // gas concentration
-
+ 
     // Serialize JSON document to a String for printing
     String jsonPayload;
     serializeJson(doc, jsonPayload);
@@ -173,12 +174,22 @@ void sendFCMMessage(String jsonPayload)
 
     // Send the request
     client.print(request);
-
+    unsigned long currentFCMMillis = millis(); // store the current time
+// if (currentFCMMillis - previousFCMMillis >= FCMperiod)
+// {
+     Serial.println("XXXXXXXXXX");
+int fcmCounter=0;
+// }
+delay(3000);
+ESP.restart();
     // Read response
     while (client.connected())
     {
         String line = client.readStringUntil('\n');
         Serial.println(line);
+                Serial.println("ZZZZZZZ");
+                Serial.println(jsonPayload.length());
+
     }
 
     client.stop();

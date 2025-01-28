@@ -73,10 +73,10 @@ void Task2code(void *pvParameters)
     mPreferences.begin("mD", false);
     mPreferences.putInt("gC", gasConc);
     mPreferences.end();
-    if (gasConc != 0)
-    {
-      ESP.restart();
-    }
+    // if (gasConc != 0)
+    // {
+    //   ESP.restart();
+    // }
     HR = cHour;
     ME = cMinute;
     DY = cDay;
@@ -90,7 +90,7 @@ void Task2code(void *pvParameters)
     GW = gasWeight;
 
     monitorDisplay();
-     Serial.printf("Task2222: %u\n", stackWaterMark);
+    //Serial.printf("Task2222: %u\n", stackWaterMark);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
@@ -304,10 +304,10 @@ void Task4code(void *pvParameters)
     WRH = remHour;
     WRMi = remMinute;
     WRMe = remMessage;
-  //   int wificounter;
-  //   wificounter=wificounter+1;
-  //   Serial.printf("Task4444444: %u\n", stackWaterMark);
-  //   Serial.print("Free PSRAM Size: ");
+  // int wificounter;
+  // wificounter=wificounter+1;
+  // Serial.printf("Task4444444: %u\n", stackWaterMark);
+  // Serial.print("Free PSRAM Size: ");
   // Serial.print(ESP.getFreePsram()); // Convert bytes to KB
   // Serial.println(" KB");
     vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -337,7 +337,7 @@ void Task5code(void *pvParameters)
           //   buzzerOff();
         }
 
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
       }
       iS = true;
       wWS = false;
@@ -378,6 +378,13 @@ void Task5code(void *pvParameters)
         {
           buzzerBeepL();
         }
+        int leakCounterMinor;
+        leakCounterMinor=leakCounterMinor+1;
+        Serial.println(leakCounterMinor);
+        if(leakCounterMinor>=10)
+        {
+         ESP.restart();
+        }
       }
       else if (gasConc >= 5)
       {
@@ -385,6 +392,12 @@ void Task5code(void *pvParameters)
         if (disBuzzer == 0)
         {
           buzzerOn();
+        }
+        int leakCounterMajor;
+        leakCounterMajor=leakCounterMajor+1;
+        if(leakCounterMajor>=5)
+        {
+          ESP.restart();
         }
       }
     }
@@ -531,6 +544,7 @@ void setup()
       delay(1000);
       Serial.println("Connecting to WiFi...");
     }
+    initializeTime();
     Serial.println("Connected to WiFi");
     sendFCMMessage(createGasLeakJsonPayload(gasConcentration));
     ESP.restart();

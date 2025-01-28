@@ -21,6 +21,7 @@ Preferences sPreferences;
 #define FORMAT_SPIFFS_IF_FAILED true
 
 const int buttonPin = 0;
+//fileCounter variable holds graph data counter max 720 readings
 int fileCounter = 0;
 int fileNumber;
 String dumpFilePath;
@@ -30,6 +31,7 @@ float gasWeigh = 0.0;
 uint32_t gasTime = 0;
 String totalWeightstr;
 int indexDecimal;
+//fileIndexCr variable holds value of Cylinder records file number
 int fileIndexCr;
 int lastIndex;
 
@@ -233,8 +235,8 @@ void writeToSPIFFS()
   if (true)
   {
     delay(50);
-    sPreferences.begin("eC", false);
-    fileCounter = sPreferences.getInt("eC", fileCounter);
+    sPreferences.begin("eG", false);
+    fileCounter = sPreferences.getInt("eG", fileCounter);
     Serial.println("Loaded counter: " + String(fileCounter));
     // counter=0;
     fileCounter++;
@@ -242,9 +244,9 @@ void writeToSPIFFS()
     {
       fileCounter = 1;
     }
-    Serial.println(fileCounter);
-    sPreferences.begin("eC", false);
-    sPreferences.putInt("eC", fileCounter);
+    //Serial.println(fileCounter);
+    sPreferences.begin("eG", false);
+    sPreferences.putInt("eG", fileCounter);
     sPreferences.end();
     Serial.println("Updated counter: " + String(fileCounter));
 
@@ -286,7 +288,7 @@ void CRToSPIFFS()
   {
     fileIndexCr = 1000;
   }
-  Serial.print("fileCounter:");
+  Serial.print("fileCounter CR:");
   Serial.println(fileIndexCr);
   Serial.println("received CR data.");
   Serial.println(testString);
@@ -303,9 +305,6 @@ void CRToSPIFFS()
   sPreferences.putInt("eC", fileIndexCr);
   sPreferences.end();
   testString = ""; // Clear the string
-  Serial.println("testString has been reset for new data.");
-  Serial.println(testString);
-
   crDataflag = false;
 }
 
@@ -348,7 +347,7 @@ void WCRToSPIFFS(String data)
 }
 /**************************************************************************************************************/
 // Retrieve cylinder record from SPIFFS and sends to app
-void SPIFFStoCR()
+void  SPIFFStoCR()
 {
   Serial.println("CR Transfer function");
   String data1 = "";
@@ -379,9 +378,11 @@ void SPIFFStoCR()
     file.close();
     if (data1Len == 0)
     {
-      crFile = 1051;
+     // crFile = 1051;
+     
       blcrFlag = false;
       wcrFlag = false;
+      break;
     }
     if (blcrFlag)
     {
